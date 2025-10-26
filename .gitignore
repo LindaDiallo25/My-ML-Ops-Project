@@ -1,26 +1,121 @@
-# Python virtual environment
-venv/
-env/
-ENV/
-
-# Large model files  
-*.keras
-*.h5
-*.pb
-
-# Large data folders
-cleaned_images_for_model/
-image_data_from_repo/
-mlruns/
-
-# Python cache
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# OS files
+# Virtual Environment
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MacOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# Docker
+*.log
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Node.js / Frontend
+node_modules/
+Front/node_modules/
+Front/build/
+Front/dist/
+Front/.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Data (ne pas pusher les images d'entraînement)
+data/images/*
+!data/images/.gitkeep
+
+# Models (optionnel - commentez si vous voulez pusher le modèle)
+# models/*.keras
+# models/*.h5
 
 # Logs
+logs/
 *.log
-api.log
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

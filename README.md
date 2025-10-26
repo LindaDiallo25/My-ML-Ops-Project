@@ -1,233 +1,226 @@
-# MLOps Project: Plant Classification (Dandelion vs Grass)
+# 🌿 Dandelion vs Grass Classifier - MLOps Project
 
-🌼 **End-to-End MLOps Pipeline with 99%+ Prediction Accuracy**
+> Image classification system using Deep Learning and MLOps best practices
 
-[![CI/CD](https://github.com/Andy-P626/ML-Ops-project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Andy-P626/ML-Ops-project/actions/workflows/ci-cd.yml)
-[![Model Training](https://github.com/Andy-P626/ML-Ops-project/actions/workflows/model-training.yml/badge.svg)](https://github.com/Andy-P626/ML-Ops-project/actions/workflows/model-training.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Binary classification of dandelion and grass images with MLflow experiment tracking, Model Registry, and containerized deployment.
 
-> **📝 Note**: The trained model file (`dandelion_grass_cnn.keras`, ~170MB) and training datasets are not included in this repository due to file size limitations. You will need to train the model locally using the provided training scripts before running the API. See [Quick Start](#-quick-start-3-steps) for instructions.
-
-## 📋 Executive Summary
-
-This project demonstrates a complete MLOps pipeline for binary image classification, distinguishing between dandelions and grass using Convolutional Neural Networks. The solution follows industry best practices and achieves 99%+ prediction confidence on test images.
-
-### Key Achievements
-
-- ✅ **Model Performance**: 85% validation accuracy, 99%+ prediction confidence
-- ✅ **Complete Pipeline**: Data preprocessing → Training → Tracking → API → Deployment
-- ✅ **Production Ready**: FastAPI with health checks, error handling, auto-documentation
-- ✅ **MLOps Integration**: MLflow tracking, Docker containerization, version control
-- ✅ **Web Interface**: React TypeScript frontend with real-time predictions
-
-## 🏗️ System Architecture
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                     MLOps Pipeline                            │
-├──────────────────────────────────────────────────────────────┤
-│                                                               │
-│  Data Layer          Model Layer         Serving Layer       │
-│  ┌─────────┐        ┌──────────┐        ┌──────────┐       │
-│  │ 400 IMG │───────▶│   CNN    │───────▶│ FastAPI  │       │
-│  │ 256x256 │        │14.8M prm │        │ REST API │       │
-│  └─────────┘        └──────────┘        └──────────┘       │
-│       │                   │                    │            │
-│       ▼                   ▼                    ▼            │
-│  ┌─────────┐        ┌──────────┐        ┌──────────┐       │
-│  │Preproc  │        │  MLflow  │        │  React   │       │
-│  │Pipeline │        │ Tracking │        │   UI     │       │
-│  └─────────┘        └──────────┘        └──────────┘       │
-│                                                               │
-└──────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │ Docker Compose   │
-                    │ Orchestration    │
-                    └──────────────────┘
-```
-
-## 🚀 Quick Start (3 Steps)
-
-### Prerequisites
-
-- Python 3.11+
-- Node.js 18+ (for frontend)
-- Docker & Docker Compose (optional)
-- 4GB+ RAM
-
-### Step 1: Setup Environment
-
-```bash
-# Clone repository
-git clone https://github.com/Andy-P626/ML-Ops-project.git
-cd ML-Ops-project
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### Step 2: Start Services
-
-**Option A: Start API Only (Swagger UI)**
-
-```bash
-cd api
-python -m uvicorn main:app --reload --port 8000
-```
-
-**Option B: Start Full Application (Recommended)**
-
-Terminal 1 - API Server:
-```bash
-cd api
-source ../venv/bin/activate
-python -m uvicorn main:app --reload --port 8000
-```
-
-Terminal 2 - Frontend:
-```bash
-cd Front
-npm install
-npm run dev
-```
-
-**Services will be available at:**
-
-- 🌐 Frontend Web App: http://localhost:3000
-- 🔌 API: http://localhost:8000
-- 📚 Interactive API Docs: http://localhost:8000/docs
-
-### Step 3: View Interactive Presentation
-
-Open the comprehensive project presentation with embedded live demo:
-
-```bash
-open presentation.html
-```
-
-**Features:**
-- 📊 Complete project overview and architecture
-- 🎮 **Embedded live Web App** - Test predictions directly in the presentation!
-- 🎯 Real test results with 99%+ accuracy
-- 📈 Development process and MLOps best practices
-- 🚀 Deployment guides
-
-**That's it!** 🎉 Your MLOps pipeline is running with live interactive demo.
+[![Docker](https://img.shields.io/badge/Docker-Compose-blue)](https://www.docker.com/)
+[![MLflow](https://img.shields.io/badge/MLflow-Tracking-orange)](https://mlflow.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-green)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB)](https://reactjs.org/)
 
 ---
 
-## 📊 Model Performance
+## 📋 Table of Contents
 
-### Training Results
-
-| Metric                        | Value             |
-| ----------------------------- | ----------------- |
-| **Validation Accuracy** | 85%               |
-| **Training Accuracy**   | 96%               |
-| **Model Size**          | 170MB             |
-| **Parameters**          | 14,839,105        |
-| **Training Time**       | ~13 minutes (CPU) |
-
-### Prediction Performance
-
-| Test Image | Predicted Class | Confidence | Result     |
-| ---------- | --------------- | ---------- | ---------- |
-| Dandelion  | dandelion       | 99.99%     | ✅ Correct |
-| Grass      | grass           | 99.74%     | ✅ Correct |
-
-### Model Architecture
-
-- **Type**: Convolutional Neural Network (CNN)
-- **Blocks**: 3 convolutional blocks with max pooling
-- **Input**: 256×256 RGB images
-- **Output**: Binary classification (sigmoid activation)
-- **Framework**: TensorFlow 2.16.1 / Keras
+- [Project Overview](#-project-overview)
+- [Architecture](#-architecture)
+- [Technologies Used](#-technologies-used)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Project Structure](#-project-structure)
+- [MLOps Features](#-mlops-features)
+- [API Documentation](#-api-documentation)
+- [Troubleshooting](#-troubleshooting)
 
 ---
 
-## 🛠️ Technology Stack
+## 🎯 Project Overview
 
-### Machine Learning
+This project implements a complete MLOps solution for plant image classification (dandelion vs grass) featuring:
 
-- **Framework**: TensorFlow 2.16.1, Keras
-- **Model**: Custom CNN architecture
-- **Tracking**: MLflow for experiment management
-
-### Backend
-
-- **API**: FastAPI (async, high-performance)
-- **Documentation**: Automatic Swagger/OpenAPI
-- **Validation**: Pydantic models
-
-### Frontend
-
-- **Framework**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: TailwindCSS
-- **UI Components**: Custom + shadcn/ui
-
-### DevOps
-
-- **Containerization**: Docker, Docker Compose
-- **Storage**: Minio S3-compatible object storage
-- **Version Control**: Git, Git LFS (for large files)
-
----
-
-## 🎬 Interactive Presentation
-
-This project includes a comprehensive **interactive HTML presentation** (`presentation.html`) with:
+- **🧠 CNN Model** trained on TensorFlow/Keras
+- **📊 MLflow** for experiment tracking and Model Registry
+- **🚀 FastAPI** for prediction API
+- **⚛️ React** for user interface
+- **🐳 Docker** for containerization
+- **📦 MinIO** for S3-compatible storage
+- **🔄 Auto-registration** of models on startup
 
 ### Features
 
-- 📊 **8 Interactive Tabs**: Overview, Architecture, Development Process, Data Pipeline, Model Training, API Demo, Results, Deployment
-- 🎮 **Embedded Live Demo**: Test the plant classification directly in the presentation with iframe integration
-- 🎯 **Real Test Results**: Actual prediction results showing 99%+ accuracy
-- 📈 **Development Journey**: Complete workflow from data to deployment
-- 🏗️ **System Architecture**: Visual diagrams of the MLOps pipeline
+✅ Real-time image classification with confidence scores
+✅ Automatic experiment tracking with MLflow
+✅ Model Registry with versioning
+✅ Documented REST API (Swagger)
+✅ Modern and responsive web interface
+✅ S3-compatible artifact storage (MinIO)
+✅ Microservices architecture
 
-### How to Use
+---
 
-1. **Start all services** (API + Frontend):
-```bash
-# Terminal 1: Start API
-cd api
-source ../venv/bin/activate
-python -m uvicorn main:app --reload --port 8000
+## 🏗️ Architecture
 
-# Terminal 2: Start Frontend
-cd Front
-npm install && npm run dev
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         User                                │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React)                         │
+│                  http://localhost:3001                      │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ↓ POST /predict
+┌─────────────────────────────────────────────────────────────┐
+│                   API (FastAPI)                             │
+│                  http://localhost:8000                      │
+│   - Load model from MLflow                                  │
+│   - Image preprocessing                                     │
+│   - CNN prediction                                          │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│              MLflow Tracking Server                         │
+│                http://localhost:5000                        │
+│   - Model Registry                                          │
+│   - Experiment tracking                                     │
+│   - Artifact storage (→ MinIO)                              │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ↓
+┌─────────────────────────────────────────────────────────────┐
+│                 MinIO (S3-compatible)                       │
+│           http://localhost:9000 (API)                       │
+│           http://localhost:9001 (Console)                   │
+│   - Model artifacts storage                                 │
+│   - Training history plots                                  │
+│   - Metrics and parameters                                  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-2. **Open presentation**:
+---
+
+## 🛠️ Technologies Used
+
+### Backend & ML
+
+- **Python 3.11** - Main language
+- **TensorFlow/Keras** - Deep Learning framework
+- **FastAPI** - Modern, fast API framework
+- **MLflow** - Experiment tracking and Model Registry
+- **scikit-learn** - ML preprocessing and utilities
+
+### Frontend
+
+- **React 18** - UI framework
+- **TypeScript** - Static typing
+- **Vite** - Modern build tool
+- **Tailwind CSS** - Utility-first styling
+
+### Infrastructure
+
+- **Docker & Docker Compose** - Containerization
+- **MinIO** - S3-compatible storage
+- **Nginx** - Reverse proxy for frontend
+- **Uvicorn** - ASGI server for FastAPI
+
+### MLOps Tools
+
+- **MLflow Model Registry** - Model versioning
+- **Auto-registration** - Automatic registration on startup
+- **Health checks** - Service monitoring
+- **Volume persistence** - Persistent data
+
+---
+
+## 🚀 Installation
+
+### Prerequisites
+
+- **Docker Desktop** ([Download](https://www.docker.com/products/docker-desktop))
+- **8 GB RAM** minimum
+- **10 GB** free disk space
+
+### Installation in 3 steps
+
+#### 1. Clone the repository
+
 ```bash
-open presentation.html
+git clone https://github.com/YOUR_USERNAME/ML-Ops-project.git
+cd ML-Ops-project
 ```
 
-3. **Navigate to "⚡ API Demo" tab** to see the embedded Web App where you can:
-   - Upload plant images directly in the presentation
-   - Get instant predictions with confidence scores
-   - See the model classify dandelions vs grass with 99%+ accuracy
+#### 2. Start all services
 
-### Presentation Structure
+```bash
+docker-compose up --build
+```
 
-| Tab | Content |
-|-----|---------|
-| 📋 Overview | Project objectives, key metrics, achievements |
-| 🏗️ Architecture | System design, technology stack, services |
-| 🔄 Development Process | 4-phase development workflow, best practices |
-| 📊 Data Pipeline | Data collection, cleaning, preprocessing steps |
-| 🤖 Model Training | CNN architecture, training configuration, MLflow tracking |
-| ⚡ API Demo | **Live embedded Web App** + API endpoints documentation |
-| 🎯 Results | Actual test cases with 99%+ prediction confidence |
-| 🚀 Deployment | Local, Docker, and production deployment guides |
+⏳ **Wait 20-30 seconds** for all services to start...
+
+#### 3. Access the services
+
+Open in your browser:
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| 🌐 **Frontend** | http://localhost:3001 | User interface |
+| 🔮 **API Swagger** | http://localhost:8000/docs | Interactive API documentation |
+| 📊 **MLflow UI** | http://localhost:5000 | Tracking & Model Registry |
+| 📦 **MinIO Console** | http://localhost:9001 | S3 Storage (minioadmin/minioadmin123) |
+
+**✨ You're ready!**
+
+---
+
+## 💻 Usage
+
+### Via Web Interface
+
+1. Open http://localhost:3001
+2. Upload an image of a dandelion or grass
+3. Click "Classify"
+4. Get the prediction with confidence level
+
+### Via API
+
+#### Health Check
+
+```bash
+curl http://localhost:8000/health
+```
+
+#### Prediction
+
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@path/to/your/image.jpg"
+```
+
+**Response**:
+
+```json
+{
+  "predicted_class": "dandelion",
+  "confidence": 0.87,
+  "probabilities": {
+    "dandelion": 0.87,
+    "grass": 0.13
+  },
+  "timestamp": "2025-11-10T10:00:00.123456"
+}
+```
+
+### Via Python
+
+```python
+import requests
+
+# Prediction
+with open("image.jpg", "rb") as f:
+    response = requests.post(
+        "http://localhost:8000/predict",
+        files={"file": f}
+    )
+
+result = response.json()
+print(f"Class: {result['predicted_class']}")
+print(f"Confidence: {result['confidence']:.2%}")
+```
 
 ---
 
@@ -235,298 +228,372 @@ open presentation.html
 
 ```
 ML-Ops-project/
-├── api/
-│   └── main.py                    # FastAPI application
-├── Front/                         # React TypeScript frontend
+├── api/                          # FastAPI API
+│   └── main.py                   # Endpoints and API logic
+├── Front/                        # React Frontend
 │   ├── src/
-│   │   ├── App.tsx               # Main application
-│   │   └── components/           # UI components
-│   └── package.json
-├── cleaned_images_for_model/      # Training dataset (400 images)
-├── mlruns/                        # MLflow experiment tracking
-├── dandelion_grass_cnn.keras      # Trained model (170MB, not in repo)
-├── train_with_mlflow.py           # Training script with tracking
-├── docker-compose.yml             # Multi-service orchestration
-├── requirements.txt               # Python dependencies
-├── presentation.html              # 🎬 Interactive demo presentation with embedded Web App
-├── DOCUMENTATION.md               # Comprehensive project documentation
-└── README.md                      # This file
+│   │   ├── App.tsx              # Main application
+│   │   └── components/          # React components
+│   ├── Dockerfile               # Frontend build
+│   └── nginx.conf               # Nginx configuration
+├── models/                       # Trained models
+│   └── dandelion_grass_cnn.keras
+├── scripts/                      # Utility scripts
+│   ├── train_with_mlflow.py    # Training with tracking
+│   ├── auto_register_model.py  # MLflow auto-registration
+│   └── docker_entrypoint.sh    # Startup script
+├── data/                         # Training data
+│   └── images/                  # Dandelion and grass images
+├── docker-compose.yml           # Service orchestration
+├── Dockerfile.api              # API Docker image
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
 ```
 
 ---
 
-## � API Endpoints
+## 🎓 MLOps Features
 
-| Endpoint        | Method | Description                                |
-| --------------- | ------ | ------------------------------------------ |
-| `/`           | GET    | API information and welcome message        |
-| `/health`     | GET    | Health check, returns model status         |
-| `/predict`    | POST   | Upload image, get classification result    |
-| `/model-info` | GET    | Get model architecture details             |
-| `/docs`       | GET    | Interactive API documentation (Swagger UI) |
+### 1. Experiment Tracking (MLflow)
 
-### Example: Predict Endpoint
+Each training run is automatically tracked:
 
-**Request:**
-
-```bash
-curl -X POST "http://localhost:8000/predict" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@dandelion.jpg"
+```python
+# scripts/train_with_mlflow.py
+with mlflow.start_run():
+    mlflow.log_param("epochs", 15)
+    mlflow.log_param("batch_size", 32)
+    mlflow.log_metric("accuracy", 0.95)
+    mlflow.keras.log_model(model, "model")
 ```
 
-**Response:**
+**Visualization**: http://localhost:5000
 
+### 2. Model Registry
+
+Models are registered with versioning:
+
+```python
+mlflow.register_model(
+    model_uri="runs:/RUN_ID/model",
+    name="dandelion-grass-classifier"
+)
+```
+
+**Available stages**:
+- `None`: New model
+- `Staging`: Under testing
+- `Production`: Deployed
+- `Archived`: Old model
+
+### 3. Auto-registration
+
+On Docker startup, the model is automatically registered in MLflow Model Registry.
+
+```bash
+# Check in logs
+docker logs mlops_api | grep "Model registered"
+```
+
+### 4. Artifact Storage (MinIO)
+
+All artifacts are stored in MinIO (S3-compatible):
+- Models (.keras)
+- Metrics (CSV)
+- Plots (PNG)
+- Metadata (JSON)
+
+**Access**: http://localhost:9001 (minioadmin / minioadmin123)
+
+### 5. Model Versioning
+
+```python
+# Load a specific version
+model = mlflow.keras.load_model("models:/dandelion-grass-classifier/1")
+
+# Load the Production version
+model = mlflow.keras.load_model("models:/dandelion-grass-classifier/Production")
+```
+
+---
+
+## 📖 API Documentation
+
+### Endpoints
+
+#### `GET /`
+
+API home page
+
+**Response**:
 ```json
 {
-  "predicted_class": "dandelion",
-  "confidence": 0.9999,
-  "probabilities": {
-    "dandelion": 0.9999,
-    "grass": 0.0001
-  },
-  "timestamp": "2025-11-01T16:28:43.562732"
+  "message": "Plant Classification API",
+  "status": "running",
+  "version": "1.0.0"
 }
 ```
 
----
+#### `GET /health`
 
-## 🐳 Docker Deployment
+API health check
 
-### Using Docker Compose (Recommended)
-
-```bash
-# Start all services
-docker-compose up --build
-
-# Services will be available at:
-# - API:       http://localhost:8000
-# - Frontend:  http://localhost:3000
-# - MLflow:    http://localhost:5000
-# - Minio:     http://localhost:9001
+**Response**:
+```json
+{
+  "status": "healthy",
+  "model_loaded": true,
+  "timestamp": "2025-11-10T10:00:00"
+}
 ```
 
-### Build Individual Images
+#### `POST /predict`
+
+Image classification
+
+**Parameters**:
+- `file`: Image (JPG, PNG)
+
+**Response**:
+```json
+{
+  "predicted_class": "grass",
+  "confidence": 0.92,
+  "probabilities": {
+    "dandelion": 0.08,
+    "grass": 0.92
+  },
+  "timestamp": "2025-11-10T10:00:00"
+}
+```
+
+#### `GET /model-info`
+
+Model information
+
+**Response**:
+```json
+{
+  "model_type": "CNN",
+  "input_shape": [null, 256, 256, 3],
+  "output_shape": [null, 1],
+  "classes": ["dandelion", "grass"],
+  "total_params": 14839105
+}
+```
+
+### Interactive Documentation
+
+**Swagger UI**: http://localhost:8000/docs
+
+---
+
+## 🐛 Troubleshooting
+
+### Docker won't start
 
 ```bash
-# API
-docker build -t mlops-api:latest -f Dockerfile.api .
+# Windows: Open Docker Desktop
+# Linux:
+sudo systemctl start docker
+```
 
-# Frontend
-cd Front
-docker build -t mlops-frontend:latest .
+### Port already in use
+
+```bash
+# See which process uses the port
+netstat -ano | findstr :3001
+
+# Change port in docker-compose.yml
+ports:
+  - "3002:80"  # Use 3002 instead of 3001
+```
+
+### Model won't load
+
+```bash
+# Check logs
+docker logs mlops_api
+
+# Verify file exists
+ls -la models/dandelion_grass_cnn.keras
+
+# Restart API
+docker-compose restart api
+```
+
+### Services won't start
+
+```bash
+# Check container status
+docker-compose ps
+
+# View service logs
+docker logs mlops_mlflow
+docker logs mlops_api
+
+# Restart everything
+docker-compose down
+docker-compose up -d
+```
+
+### "Out of memory" error
+
+Docker Desktop → Settings → Resources → Memory: **Increase to 8 GB**
+
+---
+
+## 🛑 Stop the Project
+
+```bash
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (data)
+docker-compose down -v
 ```
 
 ---
 
-## 🎯 MLOps Best Practices Implemented
+## 🔧 Development
 
-### 1. Data Management ✅
-
-- Automated data download and preprocessing
-- Version-controlled datasets
-- Balanced dataset (50% each class)
-- Consistent preprocessing pipeline
-
-### 2. Experiment Tracking ✅
-
-- MLflow integration for all training runs
-- Automatic logging of:
-  - Model parameters (epochs, batch size, etc.)
-  - Training metrics (accuracy, loss)
-  - Model artifacts and visualizations
-
-### 3. Model Versioning ✅
-
-- Git LFS for large model files
-- MLflow model registry
-- Reproducible training pipeline
-
-### 4. API Development ✅
-
-- RESTful API design
-- Automatic documentation (Swagger/OpenAPI)
-- Input validation and error handling
-- Health monitoring endpoints
-
-### 5. Containerization ✅
-
-- Docker for reproducible environments
-- Docker Compose for multi-service orchestration
-- Environment variable configuration
-
-### 6. Testing ✅
-
-- API endpoint testing
-- Model inference validation
-- Health check monitoring
-
----
-
-## 📈 Training Your Own Model
+### Train a new model
 
 ```bash
-# Download and prepare data
-python run_import_clean.py
-
-# Train model with MLflow tracking
+cd scripts
 python train_with_mlflow.py
-
-# View experiments
-mlflow ui --port 5000
-# Open http://localhost:5000
 ```
 
----
+The model will be automatically:
+- ✅ Trained on the data
+- ✅ Tracked in MLflow
+- ✅ Saved to MinIO
+- ✅ Registered in Model Registry
 
-![1762014158860](image/README/1762014158860.png)
-
-## 🧪 Testing
-
-### Test API Endpoints
+### Promote a model to Production
 
 ```bash
-# Health check
-curl http://localhost:8000/health
-
-# Model information
-curl http://localhost:8000/model-info
-
-# Prediction
-curl -X POST "http://localhost:8000/predict" \
-  -F "file=@cleaned_images_for_model/dandelion_00000000.jpg"
+python scripts/promote_model_to_production.py
 ```
 
-### Run Test Script
+Or via MLflow UI:
+1. http://localhost:5000/#/models
+2. Click on your model
+3. Select the version
+4. Stage → **Production**
+
+### Restart the API
 
 ```bash
-python test_api.py
+docker-compose restart api
 ```
+
+The API will automatically load the new version from MLflow!
 
 ---
 
-## 📊 Results & Metrics
+## 📊 Monitoring
 
-### Test Results Summary
-
-- ✅ **API Health**: Passing
-- ✅ **Model Loading**: Successful
-- ✅ **Dandelion Classification**: 99.99% confidence
-- ✅ **Grass Classification**: 99.74% confidence
-- ✅ **Response Time**: < 1 second per image
-- ✅ **Error Handling**: Robust
-
-### MLflow Experiment Tracking
-
-View detailed metrics, parameters, and artifacts:
+### Check services
 
 ```bash
-mlflow ui --port 5000
+docker-compose ps
 ```
 
----
-
-## 🎓 What This Project Demonstrates
-
-1. **Complete ML Pipeline**: From raw data to production-ready API
-2. **Experiment Tracking**: MLflow integration for reproducibility
-3. **Model Serving**: FastAPI for high-performance inference
-4. **Frontend Integration**: React TypeScript web application
-5. **Containerization**: Docker for easy deployment
-6. **Documentation**: Comprehensive guides and auto-generated API docs
-7. **Best Practices**: Following industry-standard MLOps workflows
-
----
-
-![1762014093043](image/README/1762014093043.png)
-
-## 🚧 Future Enhancements
-
-- [ ] Add CI/CD pipeline (GitHub Actions)
-- [ ] Implement A/B testing framework
-- [ ] Add monitoring and alerting (Prometheus/Grafana)
-- [ ] Deploy to cloud (AWS/GCP/Azure)
-- [ ] Add data drift detection
-- [ ] Implement automated retraining pipeline
-- [ ] Add load testing and performance benchmarks
-
----
-
-## 📧 Contact & Submission
-
-**Project Repository**: https://github.com/Andy-P626/ML-Ops-project
-
-### Submission Checklist
-
-- ✅ GitHub repository with complete code
-- ✅ README.md documentation
-- ✅ Working API (FastAPI)
-- ✅ Trained model (170MB)
-- ✅ Docker deployment configuration
-- ✅ MLflow experiment tracking
-- ✅ Test results and screenshots
-- ✅ Presentation materials
-- ✅ GitHub Actions CI/CD pipelines
-
----
-
-## 🔄 CI/CD Pipeline
-
-This project uses **GitHub Actions with self-hosted runners** for automated testing, building, and deployment.
-
-### Workflows
-
-1. **CI/CD Pipeline** (`.github/workflows/ci-cd.yml`)
-
-   - Automated testing on push/PR
-   - Docker image building
-   - Deployment to self-hosted environment
-   - Model validation
-2. **Model Training Pipeline** (`.github/workflows/model-training.yml`)
-
-   - On-demand model training
-   - Configurable hyperparameters
-   - MLflow artifact upload
-
-### Setup Self-Hosted Runner
-
-See detailed instructions in [CICD_SETUP.md](CICD_SETUP.md)
-
-**Quick setup:**
+### View logs in real-time
 
 ```bash
-# Navigate to GitHub repository settings
-# Go to Settings → Actions → Runners → New self-hosted runner
-
-# On your machine:
-mkdir actions-runner && cd actions-runner
-# Follow GitHub's download and configuration instructions
-
-# Start runner
-./run.sh
+docker logs -f mlops_api
+docker logs -f mlops_mlflow
 ```
 
-### View Pipeline Status
+### Check metrics
 
-- **Actions Dashboard**: https://github.com/Andy-P626/ML-Ops-project/actions
-- **CI/CD Runs**: https://github.com/Andy-P626/ML-Ops-project/actions/workflows/ci-cd.yml
-- **Training Runs**: https://github.com/Andy-P626/ML-Ops-project/actions/workflows/model-training.yml
+MLflow UI → http://localhost:5000 → Experiments
 
 ---
 
-## 📄 License
+## 🚀 Deployment
 
-MIT License - See LICENSE file for details
+### On a server (VPS)
+
+1. **Clone on server**
+```bash
+ssh user@server
+git clone https://github.com/YOUR_USERNAME/ML-Ops-project.git
+cd ML-Ops-project
+```
+
+2. **Install Docker**
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+apt install docker-compose -y
+```
+
+3. **Start**
+```bash
+docker-compose up -d
+```
+
+4. **Public access**
+```
+http://YOUR_SERVER_IP:3001
+```
+
+### With a domain name
+
+See complete deployment documentation (contact me for more info).
 
 ---
 
-## � Acknowledgments
+## 📈 Performance
 
-- Dataset: Plant images from public repositories
-- Framework: TensorFlow/Keras team
-- API: FastAPI framework
-- Tracking: MLflow project
+### Model
+
+- **Architecture**: CNN (3 Conv2D + MaxPool blocks)
+- **Parameters**: ~14.8M
+- **Accuracy**: ~95% (validation)
+- **Inference time**: ~200-500ms per image
+
+### Scalability
+
+- **API**: FastAPI (async, high performance)
+- **Containerization**: Docker (easy to scale)
+- **Storage**: MinIO (S3-compatible, distributed)
 
 ---
 
-*Last Updated: November 1, 2025*
+## 🤝 Contributing
+
+This project was created as part of an MLOps course.
+
+For any questions or suggestions, feel free to open an issue!
+
+---
+
+## 📝 License
+
+This project is for educational purposes.
+
+---
+
+## 👤 Author
+
+**Your Name**
+- GitHub: [@your-username](https://github.com/your-username)
+- LinkedIn: [Your Profile](https://linkedin.com/in/your-profile)
+
+---
+
+## 🙏 Acknowledgments
+
+- AlbertSchool for the MLOps course
+- TensorFlow and Keras for the ML framework
+- MLflow for MLOps tools
+- FastAPI for the API framework
+- React for the frontend framework
+
+---
+
+**Made with ❤️ for MLOps learning**

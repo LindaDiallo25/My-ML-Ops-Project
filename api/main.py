@@ -38,18 +38,55 @@ model = None
 IMAGE_SIZE = (256, 256)
 CLASS_NAMES = ["dandelion", "grass"]
 
-def load_model_from_file():
-    """Load the trained Keras model."""
+def load_model_from_mlflow():
+    """Load model from MLflow Model Registry (online)."""
     global model
     try:
-        model_path = Path("dandelion_grass_cnn.keras")
+        import mlflow
+        import mlflow.keras
+        
+        # Configuration MLflow
+        mlflow.set_tracking_uri("http://mlflow:5000")
+        
+        # Charger depuis le Model Registry
+        # Option 1 : Dernière version en Production
+        model_uri = "models:/dandelion-grass-classifier/Production"
+        
+        # Option 2 : Version spécifique (décommentez si besoin)
+        # model_uri = "models:/dandelion-grass-classifier/1"
+        
+        # Option 3 : Dernière version (peu importe le stage)
+        # model_uri = "models:/dandelion-grass-classifier/latest"
+        
+        logger.info(f"📥 Loading model from MLflow: {model_uri}")
+        model = mlflow.keras.load_model(model_uri)
+        logger.info(f"✅ Model loaded successfully from MLflow Model Registry")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error loading model from MLflow: {e}")
+        logger.info("⚠️  Falling back to local file...")
+        return load_model_from_file()
+
+
+def load_model_from_file():
+    """Load the trained Keras model from local file (fallback)."""
+    global model
+    try:
+        # Try /app/models first (Docker container path)
+        model_path = Path("/app/models/dandelion_grass_cnn.keras")
         if not model_path.exists():
-            # Try parent directory
-            model_path = Path("../dandelion_grass_cnn.keras")
+            # Try models directory (local development)
+            model_path = Path("../models/dandelion_grass_cnn.keras")
+            if not model_path.exists():
+                # Fallback to old location
+                model_path = Path("dandelion_grass_cnn.keras")
+                if not model_path.exists():
+                    model_path = Path("../dandelion_grass_cnn.keras")
         
         if model_path.exists():
             model = tf.keras.models.load_model(str(model_path))
-            logger.info(f"✅ Model loaded successfully from {model_path}")
+            logger.info(f"✅ Model loaded successfully from local file: {model_path}")
             return True
         else:
             logger.error(f"❌ Model file not found at {model_path}")
@@ -62,7 +99,10 @@ def load_model_from_file():
 async def startup_event():
     """Load model on startup."""
     logger.info("🚀 Starting up API...")
-    success = load_model_from_file()
+    
+    # Try loading from MLflow first (online), fallback to local file
+    success = load_model_from_mlflow()
+    
     if not success:
         logger.warning("⚠️  Model not loaded. Predictions will fail until model is available.")
 

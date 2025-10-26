@@ -126,7 +126,7 @@ def plot_history(history, save_path="training_history.png"):
 
 if __name__ == "__main__":
     # Configuration
-    IMAGE_DIR = "cleaned_images_for_model"
+    IMAGE_DIR = "../data/images"
     IMAGE_SIZE = (256, 256)
     TEST_SPLIT_SIZE = 0.2
     RANDOM_SEED = 42
@@ -221,7 +221,7 @@ if __name__ == "__main__":
         mlflow.log_artifact(plot_path)
         
         # 9. Save Model
-        model_filename = "dandelion_grass_cnn.keras"
+        model_filename = "../models/dandelion_grass_cnn.keras"
         model.save(model_filename)
         print(f"Model saved to '{model_filename}'")
         
@@ -231,5 +231,20 @@ if __name__ == "__main__":
         # Log model file as artifact
         mlflow.log_artifact(model_filename)
         
+        # Register model in MLflow Model Registry
+        model_name = "dandelion-grass-classifier"
+        run_id = mlflow.active_run().info.run_id
+        model_uri = f"runs:/{run_id}/model"
+        
+        try:
+            # Register the model
+            model_version = mlflow.register_model(model_uri, model_name)
+            print(f"\n✅ Model registered in MLflow Model Registry!")
+            print(f"   Model name: {model_name}")
+            print(f"   Version: {model_version.version}")
+        except Exception as e:
+            print(f"\n⚠️  Could not register model: {e}")
+            print(f"   You can register it manually via MLflow UI")
+        
         print(f"\n✅ MLflow run completed. Check MLflow UI for details.")
-        print(f"Run ID: {mlflow.active_run().info.run_id}")
+        print(f"Run ID: {run_id}")
