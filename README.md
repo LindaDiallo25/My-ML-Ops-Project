@@ -46,6 +46,7 @@ This project implements a complete MLOps pipeline for classifying plant images (
 
 ```bash
 # Clone the repository
+git clone https://github.com/Andy-P626/ML-Ops-project.git
 cd ML-Ops-project
 
 # Create virtual environment (optional but recommended)
