@@ -451,6 +451,4 @@ MIT License - See LICENSE file for details
 
 ---
 
-[prillard.martin@gmail.com](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)
-
 *Last Updated: November 1, 2025*
