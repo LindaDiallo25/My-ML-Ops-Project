@@ -53,6 +53,7 @@ This project demonstrates a complete MLOps pipeline for binary image classificat
 ### Prerequisites
 
 - Python 3.11+
+- Node.js 18+ (for frontend)
 - Docker & Docker Compose (optional)
 - 4GB+ RAM
 
@@ -71,27 +72,53 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Step 2: Start API Server
+### Step 2: Start Services
+
+**Option A: Start API Only (Swagger UI)**
 
 ```bash
 cd api
 python -m uvicorn main:app --reload --port 8000
 ```
 
-**API will be available at:**
+**Option B: Start Full Application (Recommended)**
 
-- API: http://localhost:8000
-- Interactive Docs: http://localhost:8000/docs
+Terminal 1 - API Server:
+```bash
+cd api
+source ../venv/bin/activate
+python -m uvicorn main:app --reload --port 8000
+```
 
-### Step 3: Test Predictions
+Terminal 2 - Frontend:
+```bash
+cd Front
+npm install
+npm run dev
+```
 
-Open http://localhost:8000/docs and:
+**Services will be available at:**
 
-1. Click on `/predict` endpoint
-2. Upload an image from `cleaned_images_for_model/`
-3. View prediction results with confidence scores
+- 🌐 Frontend Web App: http://localhost:3000
+- 🔌 API: http://localhost:8000
+- 📚 Interactive API Docs: http://localhost:8000/docs
 
-**That's it!** 🎉 Your MLOps pipeline is running.
+### Step 3: View Interactive Presentation
+
+Open the comprehensive project presentation with embedded live demo:
+
+```bash
+open presentation.html
+```
+
+**Features:**
+- 📊 Complete project overview and architecture
+- 🎮 **Embedded live Web App** - Test predictions directly in the presentation!
+- 🎯 Real test results with 99%+ accuracy
+- 📈 Development process and MLOps best practices
+- 🚀 Deployment guides
+
+**That's it!** 🎉 Your MLOps pipeline is running with live interactive demo.
 
 ---
 
@@ -153,6 +180,57 @@ Open http://localhost:8000/docs and:
 
 ---
 
+## 🎬 Interactive Presentation
+
+This project includes a comprehensive **interactive HTML presentation** (`presentation.html`) with:
+
+### Features
+
+- 📊 **8 Interactive Tabs**: Overview, Architecture, Development Process, Data Pipeline, Model Training, API Demo, Results, Deployment
+- 🎮 **Embedded Live Demo**: Test the plant classification directly in the presentation with iframe integration
+- 🎯 **Real Test Results**: Actual prediction results showing 99%+ accuracy
+- 📈 **Development Journey**: Complete workflow from data to deployment
+- 🏗️ **System Architecture**: Visual diagrams of the MLOps pipeline
+
+### How to Use
+
+1. **Start all services** (API + Frontend):
+```bash
+# Terminal 1: Start API
+cd api
+source ../venv/bin/activate
+python -m uvicorn main:app --reload --port 8000
+
+# Terminal 2: Start Frontend
+cd Front
+npm install && npm run dev
+```
+
+2. **Open presentation**:
+```bash
+open presentation.html
+```
+
+3. **Navigate to "⚡ API Demo" tab** to see the embedded Web App where you can:
+   - Upload plant images directly in the presentation
+   - Get instant predictions with confidence scores
+   - See the model classify dandelions vs grass with 99%+ accuracy
+
+### Presentation Structure
+
+| Tab | Content |
+|-----|---------|
+| 📋 Overview | Project objectives, key metrics, achievements |
+| 🏗️ Architecture | System design, technology stack, services |
+| 🔄 Development Process | 4-phase development workflow, best practices |
+| 📊 Data Pipeline | Data collection, cleaning, preprocessing steps |
+| 🤖 Model Training | CNN architecture, training configuration, MLflow tracking |
+| ⚡ API Demo | **Live embedded Web App** + API endpoints documentation |
+| 🎯 Results | Actual test cases with 99%+ prediction confidence |
+| 🚀 Deployment | Local, Docker, and production deployment guides |
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -166,11 +244,12 @@ ML-Ops-project/
 │   └── package.json
 ├── cleaned_images_for_model/      # Training dataset (400 images)
 ├── mlruns/                        # MLflow experiment tracking
-├── dandelion_grass_cnn.keras      # Trained model (170MB)
+├── dandelion_grass_cnn.keras      # Trained model (170MB, not in repo)
 ├── train_with_mlflow.py           # Training script with tracking
 ├── docker-compose.yml             # Multi-service orchestration
 ├── requirements.txt               # Python dependencies
-├── presentation.html              # Project presentation
+├── presentation.html              # 🎬 Interactive demo presentation with embedded Web App
+├── DOCUMENTATION.md               # Comprehensive project documentation
 └── README.md                      # This file
 ```
 
