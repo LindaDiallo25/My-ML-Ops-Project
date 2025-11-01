@@ -6,6 +6,8 @@
 [![Model Training](https://github.com/Andy-P626/ML-Ops-project/actions/workflows/model-training.yml/badge.svg)](https://github.com/Andy-P626/ML-Ops-project/actions/workflows/model-training.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> **📝 Note**: The trained model file (`dandelion_grass_cnn.keras`, ~170MB) and training datasets are not included in this repository due to file size limitations. You will need to train the model locally using the provided training scripts before running the API. See [Quick Start](#-quick-start-3-steps) for instructions.
+
 ## 📋 Executive Summary
 
 This project demonstrates a complete MLOps pipeline for binary image classification, distinguishing between dandelions and grass using Convolutional Neural Networks. The solution follows industry best practices and achieves 99%+ prediction confidence on test images.
