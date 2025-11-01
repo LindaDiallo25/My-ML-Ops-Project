@@ -17,30 +17,71 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
         setResult(null);
-        // Simulate classification (you'll replace this with actual API call)
-        simulateClassification();
       };
       reader.readAsDataURL(file);
+      
+      // Classify the image using the API
+      await classifyImage(file);
     }
   };
 
-  const simulateClassification = () => {
+  const classifyImage = async (file: File) => {
     setIsClassifying(true);
-    // Simulate API call - replace this with your actual classification logic
-    setTimeout(() => {
+    
+    try {
+      // API endpoint - use /api/ prefix for nginx proxy or direct localhost for dev
+      const apiUrl = import.meta.env.PROD 
+        ? '/api/predict' 
+        : 'http://localhost:8000/predict';
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Map API response to our result format
+      const apiResult: ClassificationResult = {
+        label: data.predicted_class as 'dandelion' | 'grass',
+        confidence: data.confidence * 100, // Convert to percentage
+      };
+      
+      setResult(apiResult);
+    } catch (error) {
+      console.error('Classification error:', error);
+      
+      // Fallback to mock data if API fails
       const mockResult: ClassificationResult = {
         label: Math.random() > 0.5 ? 'dandelion' : 'grass',
-        confidence: Math.random() * 30 + 70, // 70-100%
+        confidence: Math.random() * 30 + 70,
       };
       setResult(mockResult);
+      
+      // Show error to user (optional)
+      alert('API connection failed. Using mock prediction for demo.');
+    } finally {
       setIsClassifying(false);
-    }, 2000);
+    }
+  };
+  
+  const reclassifyImage = async () => {
+    if (fileInputRef.current?.files?.[0]) {
+      await classifyImage(fileInputRef.current.files[0]);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -254,7 +295,7 @@ export default function App() {
                   </Button>
                   {result && (
                     <Button
-                      onClick={simulateClassification}
+                      onClick={reclassifyImage}
                       className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
