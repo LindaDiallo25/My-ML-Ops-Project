@@ -455,7 +455,6 @@ mlflow ui --port 5000
 ## 📧 Contact & Submission
 
 **Project Repository**: https://github.com/Andy-P626/ML-Ops-project
-**Contact Email**: prillard.martin@gmail.com
 
 ### Submission Checklist
 

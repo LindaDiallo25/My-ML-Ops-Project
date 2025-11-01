@@ -224,7 +224,6 @@ echo "MLOps Project Demo - $(date)" > demo_package/README.txt
 - [ ] 7+ screenshots
 - [ ] README.md documentation
 - [ ] Team member names
-- [ ] Email to: prillard.martin@gmail.com
 
 ---
 

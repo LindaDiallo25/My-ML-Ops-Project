@@ -118,7 +118,6 @@ git push
 
 ## 📧 Email Submission Template
 
-**To:** prillard.martin@gmail.com  
 **Subject:** MLOps Project Submission - [Your Team Name]
 
 **Body:**
