@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Minio - S3 compatible object storage
+  minio:
+    image: minio/minio:latest
+    container_name: mlops_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - mlops_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MLflow tracking server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlops_mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin123
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root s3://mlflow-artifacts/
+    volumes:
+      - mlflow_data:/mlflow
+    networks:
+      - mlops_network
+    depends_on:
+      - minio
+
+  # Plant Classification API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: mlops_api
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_PATH: /app/models/dandelion_grass_cnn.keras
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./dandelion_grass_cnn.keras:/app/models/dandelion_grass_cnn.keras:ro
+    networks:
+      - mlops_network
+    depends_on:
+      - mlflow
+    restart: unless-stopped
+
+  # Frontend WebApp
+  frontend:
+    build:
+      context: ./Front
+      dockerfile: Dockerfile
+    container_name: mlops_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - mlops_network
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  minio_data:
+  mlflow_data:
+
+networks:
+  mlops_network:
+    driver: bridge
