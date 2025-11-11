@@ -22,8 +22,9 @@ COPY scripts/init_minio.py ./scripts/init_minio.py
 COPY scripts/auto_register_model.py ./scripts/auto_register_model.py
 COPY scripts/docker_entrypoint.sh ./scripts/docker_entrypoint.sh
 
-# Make entrypoint script executable
-RUN chmod +x ./scripts/docker_entrypoint.sh
+# Convert line endings and make entrypoint script executable
+RUN sed -i 's/\r$//' ./scripts/docker_entrypoint.sh && \
+    chmod +x ./scripts/docker_entrypoint.sh
 
 # Create models directory
 RUN mkdir -p /app/models

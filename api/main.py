@@ -43,24 +43,36 @@ def load_model_from_mlflow():
     global model
     try:
         import mlflow
-        import mlflow.keras
+        import mlflow.pyfunc
         
         # Configuration MLflow
         mlflow.set_tracking_uri("http://mlflow:5000")
         
-        # Charger depuis le Model Registry
-        # Option 1 : Dernière version en Production
-        model_uri = "models:/dandelion-grass-classifier/Production"
+        # Try to get the latest version
+        client = mlflow.tracking.MlflowClient()
         
-        # Option 2 : Version spécifique (décommentez si besoin)
-        # model_uri = "models:/dandelion-grass-classifier/1"
+        # First, try to get Production version
+        try:
+            versions = client.get_latest_versions("dandelion-grass-classifier", stages=["Production"])
+            if versions:
+                model_version = versions[0].version
+                logger.info(f"📥 Loading model version {model_version} from Production stage")
+            else:
+                raise Exception("No Production version found")
+        except:
+            # If no Production version, get latest version
+            versions = client.get_latest_versions("dandelion-grass-classifier")
+            if not versions:
+                raise Exception("No model versions found")
+            model_version = versions[0].version
+            logger.info(f"📥 Loading latest model version {model_version}")
         
-        # Option 3 : Dernière version (peu importe le stage)
-        # model_uri = "models:/dandelion-grass-classifier/latest"
-        
-        logger.info(f"📥 Loading model from MLflow: {model_uri}")
+        # Load model directly with keras flavor
+        model_uri = f"models:/dandelion-grass-classifier/{model_version}"
+        import mlflow.keras
         model = mlflow.keras.load_model(model_uri)
-        logger.info(f"✅ Model loaded successfully from MLflow Model Registry")
+        
+        logger.info(f"✅ Model loaded successfully from MLflow Model Registry (version {model_version})")
         return True
         
     except Exception as e:

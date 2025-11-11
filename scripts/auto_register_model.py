@@ -99,6 +99,7 @@ def register_model(model_path, model_name="dandelion-grass-classifier"):
             mlflow.log_param("random_seed", 42)
             mlflow.log_param("auto_registered", "true")
             
+<<<<<<< HEAD
             # Log performance metrics (estimated from model)
             mlflow.log_metric("final_val_accuracy", 0.95)
             mlflow.log_metric("final_val_loss", 0.15)
@@ -109,11 +110,26 @@ def register_model(model_path, model_name="dandelion-grass-classifier"):
             mlflow.log_metric("f1_score", 0.95)
             
             # Log and register model
+=======
+            # Log and register model with proper artifact path
+>>>>>>> ddffa2e43dea2c714d2e758e48129c1643fe75e4
             print(f"\n[3/3] Registering model in Model Registry...")
+            
+            # Create a signature for the model
+            import numpy as np
+            from mlflow.models.signature import infer_signature
+            
+            # Create sample input
+            sample_input = np.random.rand(1, 256, 256, 3).astype(np.float32)
+            sample_output = model.predict(sample_input, verbose=0)
+            signature = infer_signature(sample_input, sample_output)
+            
+            # Log model with signature
             mlflow.keras.log_model(
                 model,
                 "model",
-                registered_model_name=model_name
+                registered_model_name=model_name,
+                signature=signature
             )
             
             print(f"\n{'='*70}")

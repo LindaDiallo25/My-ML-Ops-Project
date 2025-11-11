@@ -78,12 +78,6 @@ export default function App() {
     }
   };
   
-  const reclassifyImage = async () => {
-    if (fileInputRef.current?.files?.[0]) {
-      await classifyImage(fileInputRef.current.files[0]);
-    }
-  };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -293,15 +287,6 @@ export default function App() {
                     <Upload className="w-4 h-4 mr-2" />
                     Upload Another
                   </Button>
-                  {result && (
-                    <Button
-                      onClick={reclassifyImage}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Reclassify
-                    </Button>
-                  )}
                 </div>
               </div>
             )}
