@@ -95,9 +95,9 @@ def clean_and_process_images():
     print("\nStarting image cleaning and processing...")
     
     # Configuration
-    SOURCE_BASE_DIR = "image_data_from_repo"
+    SOURCE_BASE_DIR = "../temp_download"
     CATEGORIES = ["dandelion", "grass"]
-    OUTPUT_DIR = "cleaned_images_for_model"
+    OUTPUT_DIR = "../data/images"
     IMAGE_SIZE = (256, 256)
     
     source_base_path = Path(SOURCE_BASE_DIR)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     FOLDERS_TO_DOWNLOAD = ["dandelion", "grass"]
     
     # Base directory to save all images
-    BASE_SAVE_DIR = "image_data_from_repo"
+    BASE_SAVE_DIR = "../temp_download"
     
     print(f"Starting download for {len(FOLDERS_TO_DOWNLOAD)} folders...")
     print("=" * 40)

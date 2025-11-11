@@ -17,6 +17,15 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 # Copy API code
 COPY api/ ./api/
 
+# Copy scripts for auto-registration
+COPY scripts/init_minio.py ./scripts/init_minio.py
+COPY scripts/auto_register_model.py ./scripts/auto_register_model.py
+COPY scripts/docker_entrypoint.sh ./scripts/docker_entrypoint.sh
+
+# Convert line endings and make entrypoint script executable
+RUN sed -i 's/\r$//' ./scripts/docker_entrypoint.sh && \
+    chmod +x ./scripts/docker_entrypoint.sh
+
 # Create models directory
 RUN mkdir -p /app/models
 
@@ -29,5 +38,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
-# Run the API
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the entrypoint script (which registers model then starts API)
+CMD ["/app/scripts/docker_entrypoint.sh"]
