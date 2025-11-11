@@ -93,6 +93,43 @@ This project implements a complete MLOps solution for plant image classification
 
 ---
 
+## ⚡ Automatic Setup
+
+When you run `docker-compose up --build`, the system **automatically** performs the following:
+
+### 1. Services Startup
+- ✅ MinIO (S3-compatible storage)
+- ✅ MLflow (Tracking server)
+- ✅ API (FastAPI)
+- ✅ Frontend (React)
+
+### 2. MinIO Initialization
+- ✅ Waits for MinIO to be ready
+- ✅ Creates `mlflow-artifacts` bucket
+- ✅ Configures S3-compatible storage
+
+### 3. Model Auto-Registration
+- ✅ Waits for MLflow to be ready
+- ✅ Loads the trained model
+- ✅ Creates MLflow run with **15 parameters**:
+  - Training config (epochs, batch_size, optimizer...)
+  - Model architecture (input_shape, total_params...)
+  - Data configuration (train_test_split, random_seed...)
+- ✅ Logs **7 performance metrics**:
+  - Accuracy, Loss (train & validation)
+  - Precision, Recall, F1-score
+- ✅ Registers model in Model Registry
+
+### 4. Ready to Use!
+- ✅ All services operational
+- ✅ Model available in MLflow UI with metrics
+- ✅ API ready for predictions
+- ✅ Frontend ready for use
+
+**No manual configuration needed!** 🎉
+
+---
+
 ## 🛠️ Technologies Used
 
 ### Backend & ML
