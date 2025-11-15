@@ -9,7 +9,7 @@ import tensorflow as tf
 from pathlib import Path
 
 # Set MLflow tracking URI
-mlflow.set_tracking_uri("http://mlflow:5000")
+mlflow.set_tracking_uri("http://mlflow:5000")         # DD = OR "http://127.0.0.1:5000"
 
 # Set experiment
 mlflow.set_experiment("dandelion_grass_classification")
@@ -18,7 +18,7 @@ model_path = Path("/app/models/dandelion_grass_cnn.keras")
 model_name = "dandelion-grass-classifier"
 
 print("="*60)
-print("MLflow Model Registration")
+print("MLflow model registration") 
 print("="*60)
 
 if not model_path.exists():
@@ -59,7 +59,7 @@ with mlflow.start_run(run_name="model_registration") as run:
     print(f"Model name: {model_name}")
     print(f"Run ID: {run.info.run_id}")
     print(f"\nView in MLflow UI:")
-    print(f"  - All models: http://localhost:5000/#/models")
-    print(f"  - This model: http://localhost:5000/#/models/{model_name}")
+    print(f"  All models: http://localhost:5000/#/models")
+    print(f"  This model: http://localhost:5000/#/models/{model_name}")
     print("="*60)
 

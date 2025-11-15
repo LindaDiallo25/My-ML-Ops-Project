@@ -221,7 +221,7 @@ if __name__ == "__main__":
         mlflow.log_artifact(plot_path)
         
         # 9. Save Model
-        model_filename = "../models/dandelion_grass_cnn.keras"
+        model_filename = "models/dandelion_grass_cnn.keras"
         model.save(model_filename)
         print(f"Model saved to '{model_filename}'")
         
