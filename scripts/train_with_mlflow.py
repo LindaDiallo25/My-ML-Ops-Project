@@ -222,6 +222,12 @@ if __name__ == "__main__":
         
         # 9. Save Model
         model_filename = "models/dandelion_grass_cnn.keras"
+
+        # Ensure the 'models' directory exists before saving the model
+        model_dir = os.path.dirname(model_filename)
+        if model_dir:
+            os.makedirs(model_dir, exist_ok=True)
+
         model.save(model_filename)
         print(f"Model saved to '{model_filename}'")
         
