@@ -48,7 +48,7 @@ jobs:
           Write-Host "TensorFlow was not previously installed, skipping uninstall."
         }
         Write-Host "Installing fresh TensorFlow and dependencies..."
-        pip install tensorflow==2.16.1 numpy==1.26.4
+        pip install tensorflow==2.16.1 numpy==1.26.4 --no-cache-dir
     
     - name: Lint with flake8
       run: |
