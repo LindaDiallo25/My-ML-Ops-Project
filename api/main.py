@@ -1,5 +1,5 @@
 """
-FastAPI application for plant classification (Dandelion vs Grass).
+FastAPI application for plant classification (Dandelion versus Grass).
 Provides endpoints for image prediction and health checks.
 """
 
