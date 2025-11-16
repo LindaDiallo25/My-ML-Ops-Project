@@ -40,15 +40,30 @@ jobs:
     - name: Clean Reinstall TensorFlow (To fix 'tensorflow.python' error)
       shell : powershell
       run: |
+        $target_dir = "./.pip_pkgs_tf" # Short path for TensorFlow modules
+      
         Write-Host "Attempting clean reinstall of TensorFlow..."
         try {
-          pip uninstall tensorflow -y
+          pip uninstall tensorflow -y | Out-Null
           Write-Host "Successfully uninstalled old TensorFlow."
         } catch {
           Write-Host "TensorFlow was not previously installed, skipping uninstall."
         }
+        # Ensure target directory exists
+        New-Item -ItemType Directory -Force -Path $target_dir | Out-Null
         Write-Host "Installing fresh TensorFlow and dependencies..."
-        pip install tensorflow==2.16.1 numpy==1.26.4 --no-cache-dir
+        pip install tensorflow==2.16.1 numpy==1.26.4 --target $target_dir --no-cache-dir
+        
+        # Update PYTHONPATH for all subsequent steps in this job
+        # Prepend the custom install path to the existing PYTHONPATH
+        $current_path = $env:PYTHONPATH
+        $new_path = "$target_dir;$current_path"
+        Write-Host "Setting PYTHONPATH to include $target_dir. New path: $new_path"
+      
+        # This sets the environment variable for subsequent steps in the job
+        echo "PYTHONPATH=$new_path" >> $env:GITHUB_ENV
+
+        Write-Host "TensorFlow installation complete."
     
     - name: Lint with flake8
       run: |
@@ -76,7 +91,7 @@ jobs:
     - name: Run API tests
       shell: powershell
       run: |
-        # Change directory to the API folder
+        # Change directory to the API folderdir
         Set-Location api
       
         # Start API in background using Start-Process, capturing the process ID
@@ -247,6 +262,10 @@ jobs:
       with:
         lfs: true
     
+    - name: Force Git LFS Pull
+      run: git lfs pull
+      shell: bash
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -261,6 +280,9 @@ jobs:
     - name: Validate model file
       shell : powershell
       run: |
+        # FIX 2: Set the Python environment variable to ensure proper UTF-8 encoding for printing
+        $env:PYTHONIOENCODING="utf-8"
+        
         $target_dir = "./.pip_packages"
         $env:PYTHONPATH = "$target_dir;$env:PYTHONPATH"
 
