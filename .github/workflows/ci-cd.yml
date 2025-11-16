@@ -41,7 +41,7 @@ jobs:
         # 1. Ensure target directory exists
         New-Item -ItemType Directory -Force -Path $target_dir | Out-Null
       
-        # 2. Install all required packages to the short path.
+        # 2. Install all required packages to the short path
         Write-Host "Installing dependencies from requirements.txt, plus TensorFlow, pytest, and flake8..."
         # Install packages from requirements.txt (FastAPI, Uvicorn, etc.)
         pip install -r requirements.txt --target $target_dir --no-cache-dir
