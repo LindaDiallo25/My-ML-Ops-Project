@@ -32,6 +32,7 @@ jobs:
           ${{ runner.os }}-pip-
     
     - name: Install ALL Python dependencies to short path (Fixes Windows Path Limit)
+      id: install_deps
       shell: powershell
       run: |
         $target_dir = "./.pip_pkgs_tf" # Short path for ALL Python modules
@@ -47,16 +48,13 @@ jobs:
         pip install -r requirements.txt --target $target_dir --no-cache-dir
         # Install ML/Test/Lint dependencies (TensorFlow, pytest, flake8)
         pip install tensorflow==2.16.1 pytest pytest-cov flake8 --target $target_dir --no-cache-dir
-
-        # 3. Update PYTHONPATH for all subsequent steps in this job
-        # Prepend the custom install path to the existing PYTHONPATH
-        $current_path = $env:PYTHONPATH
-        # Use ';' as separator for Windows PATH variables
-        $new_path = "$target_dir;$current_path" 
-        Write-Host "Setting PYTHONPATH to include $target_dir. New path: $new_path"
       
-        # This sets the environment variable for subsequent steps in the job
-        echo "PYTHONPATH=$new_path" >> $env:GITHUB_ENV
+        # 3. Store the install path for manual sys.path fix
+        echo "CUSTOM_PYTHON_PATH=$target_dir" >> $env:GITHUB_ENV
+
+        # 4. Determine the path to the system's Python executable that we need to use
+        # We assume the Python 3.11 executable is named 'python.exe' and is on the PATH.
+        # We will still rely on the 'python' command to be the correct one from actions/setup-python.
     
     - name: Lint with flake8
       run: |
@@ -87,9 +85,14 @@ jobs:
         @'
         import sys
         import os
+        import io 
+      
+        # Set the standard output encoding to UTF-8 to prevent the UnicodeEncodeError
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
       
         # The path where all packages were installed (set in the previous step)
-        custom_path = os.environ.get('CUSTOM_PYTHON_PATH', './.pip_pkgs_tf')
+        # We use the absolute path for maximum reliability
+        custom_path = os.path.abspath(os.environ.get('CUSTOM_PYTHON_PATH', './.pip_pkgs_tf'))
       
         # Add the custom installation directory to the start of the Python search path
         if custom_path not in sys.path:
@@ -117,6 +120,10 @@ jobs:
     - name: Run API tests
       shell: powershell
       run: |
+        # Inject the custom path into the environment for this step's Python execution
+        $target_dir = $env:CUSTOM_PYTHON_PATH
+        $env:PYTHONPATH = "$target_dir;$env:PYTHONPATH"
+        
         # Change directory to the API folderdir
         Set-Location api
       
