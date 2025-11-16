@@ -142,7 +142,7 @@ jobs:
           Write-Host "Testing /model-info endpoint..."
           Invoke-RestMethod -Uri http://localhost:8000/model-info -Method Get
         
-          Write-Host "✅ API tests successful."
+          Write-Host "✅ API tests successful"
         } catch {
           Write-Error "❌ API tests failed: $($_.Exception.Message)"
           exit 1
