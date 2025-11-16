@@ -38,9 +38,17 @@ jobs:
         pip install pytest pytest-cov flake8
 
     - name: Clean Reinstall TensorFlow (To fix 'tensorflow.python' error)
+      shell : powershell
       run: |
-       pip uninstall tensorflow -y || echo "TensorFlow not found, continuing..."
-       pip install tensorflow==2.16.1 numpy==1.26.4
+        Write-Host "Attempting clean reinstall of TensorFlow..."
+        try {
+          pip uninstall tensorflow -y
+          Write-Host "Successfully uninstalled old TensorFlow."
+        } catch {
+          Write-Host "TensorFlow was not previously installed, skipping uninstall."
+        }
+        Write-Host "Installing fresh TensorFlow and dependencies..."
+        pip install tensorflow==2.16.1 numpy==1.26.4
     
     - name: Lint with flake8
       run: |
@@ -129,9 +137,9 @@ jobs:
     - name: Check build output
       shell : powershell 
       run: |
-        if (Test-Path -Path "Front/dist" -PathType Container) {
+        if (Test-Path -Path "Front/build" -PathType Container) {
           Write-Host "✅ Frontend build successful"
-          ls -la Front/dist
+          Get-ChildItem -Path "Front/build"
         } else {
           Write-Host "❌ Frontend build failed"
           exit 1
