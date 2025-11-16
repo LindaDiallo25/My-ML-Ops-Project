@@ -46,7 +46,7 @@ jobs:
       continue-on-error: true
     
     - name: Check model file exists
-      shell : pwsh 
+      shell : powershell 
       run: |
         if (Test-Path -Path "models/dandelion_grass_cnn.keras") {
           Write-Host "✅ Model file found"
@@ -61,23 +61,37 @@ jobs:
         python -c "from main import app; print('✅ FastAPI app imports successfully')"
     
     - name: Run API tests
-      shell : sh 
+      shell: powershell
       run: |
-        # Start API in background
-        cd api
-        python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
-        API_PID=$!
-        sleep 5
+        # Change directory to the API folder
+        Set-Location api
+      
+        # Start API in background using Start-Process, capturing the process ID
+        $ApiProcess = Start-Process python -ArgumentList "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" -PassThru
+        $ApiPid = $ApiProcess.Id
+      
+        Write-Host "API started with PID: $ApiPid. Waiting 10 seconds for server to start..."
+        Start-Sleep -Seconds 10
+      
+        try {
+          # Test endpoints using PowerShell's native HTTP client (Invoke-RestMethod)
+          Write-Host "Testing /health endpoint..."
+          Invoke-RestMethod -Uri http://localhost:8000/health -Method Get
         
-        # Test health endpoint
-        curl -f http://localhost:8000/health || exit 1
+          Write-Host "Testing /model-info endpoint..."
+          Invoke-RestMethod -Uri http://localhost:8000/model-info -Method Get
         
-        # Test model-info endpoint
-        curl -f http://localhost:8000/model-info || exit 1
-        
-        # Stop API
-        kill $API_PID
+          Write-Host "✅ API tests successful."
+        } catch {
+          Write-Error "❌ API tests failed: $($_.Exception.Message)"
+          exit 1
+        } finally {
+        # Stop API using the captured PID
+        Write-Host "Stopping API (PID: $ApiPid)..."
+        Stop-Process -Id $ApiPid -Force -ErrorAction SilentlyContinue
+        }
       continue-on-error: true
+       
 
   # Job 2: Build and Test Frontend
   test-frontend:
@@ -105,7 +119,7 @@ jobs:
         npm run build
     
     - name: Check build output
-      shell : pwsh 
+      shell : powershell 
       run: |
         if (Test-Path -Path "Front/dist" -PathType Container) {
           Write-Host "✅ Frontend build successful"
@@ -187,7 +201,7 @@ jobs:
       uses: actions/checkout@v3
     
     - name: Deploy with Docker Compose
-      shell : sh 
+      shell : powershell 
       run: |
         # Stop existing containers
         docker-compose down || true
@@ -223,13 +237,13 @@ jobs:
         python-version: '3.11'
     
     - name: Install dependencies
-      shell : pwsh
+      shell : powershell
       run: |
         $target_dir = "./.pip_packages"
         pip install tensorflow==2.16.1 numpy pillow --target $target_dir 
     
     - name: Validate model file
-      shell : pwsh
+      shell : powershell
       run: |
         $target_dir = "./.pip_packages"
         $env:PYTHONPATH = "$target_dir;$env:PYTHONPATH"
