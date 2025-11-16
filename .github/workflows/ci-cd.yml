@@ -46,22 +46,22 @@ jobs:
       continue-on-error: true
     
     - name: Check model file exists
-      shell : bash 
+      shell : pwsh 
       run: |
-        if [ -f "models/dandelion_grass_cnn.keras" ]; then
-          echo "✅ Model file found"
-        else
-          echo "❌ Model file not found in 'models' directory"
+        if (Test-Path -Path "models/dandelion_grass_cnn.keras") {
+          Write-Host "✅ Model file found"
+        } else {
+          Write-Host "❌ Model file not found in 'models' directory"
           exit 1
-        fi
-    
+        }
+
     - name: Test API imports
       run: |
         cd api
         python -c "from main import app; print('✅ FastAPI app imports successfully')"
     
     - name: Run API tests
-      shell : bash
+      shell : sh 
       run: |
         # Start API in background
         cd api
@@ -105,15 +105,15 @@ jobs:
         npm run build
     
     - name: Check build output
-      shell : bash
+      shell : pwsh 
       run: |
-        if [ -d "Front/dist" ]; then
-          echo "✅ Frontend build successful"
+        if (Test-Path -Path "Front/dist" -PathType Container) {
+          Write-Host "✅ Frontend build successful"
           ls -la Front/dist
-        else
-          echo "❌ Frontend build failed"
+        } else {
+          Write-Host "❌ Frontend build failed"
           exit 1
-        fi
+        }
 
   # Job 3: Build Docker Images
   build-docker:
@@ -152,7 +152,7 @@ jobs:
     
     - name: Push to Docker Hub (if configured)
       if: success()
-      shell: bash
+      shell: sh
       run: |
         if [ -n "${{ secrets.DOCKER_USERNAME }}" ]; then
           docker tag mlops-api:latest ${{ secrets.DOCKER_USERNAME }}/mlops-api:latest
@@ -187,7 +187,7 @@ jobs:
       uses: actions/checkout@v3
     
     - name: Deploy with Docker Compose
-      shell : bash
+      shell : sh 
       run: |
         # Stop existing containers
         docker-compose down || true
@@ -223,11 +223,17 @@ jobs:
         python-version: '3.11'
     
     - name: Install dependencies
+      shell : pwsh
       run: |
-        pip install tensorflow==2.16.1 numpy pillow
+        $target_dir = "./.pip_packages"
+        pip install tensorflow==2.16.1 numpy pillow --target $target_dir 
     
     - name: Validate model file
+      shell : pwsh
       run: |
+        $target_dir = "./.pip_packages"
+        $env:PYTHONPATH = "$target_dir;$env:PYTHONPATH"
+
         python -c "
         import tensorflow as tf
         import os
