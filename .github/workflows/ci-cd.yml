@@ -36,6 +36,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov flake8
+
+    - name: Clean Reinstall TensorFlow (To fix 'tensorflow.python' error)
+      run: |
+       pip uninstall tensorflow -y || echo "TensorFlow not found, continuing..."
+       pip install tensorflow==2.16.1 numpy==1.26.4
     
     - name: Lint with flake8
       run: |
@@ -114,10 +119,13 @@ jobs:
         npm ci
     
     - name: Build frontend
+      shell : powershell
       run: |
-        cd Front
+        Set-Location Front
         npm run build
-    
+        Write-Host "--- Contents of 'Front' directory after build ---"
+        Get-ChildItem -Recurse 
+
     - name: Check build output
       shell : powershell 
       run: |
