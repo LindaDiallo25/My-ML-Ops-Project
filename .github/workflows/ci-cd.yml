@@ -77,9 +77,42 @@ jobs:
         }
 
     - name: Test API imports
+      shell : powershell
       run: |
-        cd api
-        python -c "from main import app; print('✅ FastAPI app imports successfully')"
+        $target_dir = $env:CUSTOM_PYTHON_PATH
+        Write-Host "Using target directory for sys.path fix: $target_dir"
+        Set-Location api
+      
+        # Create a temporary Python script to manually append the short path to sys.path
+        @'
+        import sys
+        import os
+      
+        # The path where all packages were installed (set in the previous step)
+        custom_path = os.environ.get('CUSTOM_PYTHON_PATH', './.pip_pkgs_tf')
+      
+        # Add the custom installation directory to the start of the Python search path
+        if custom_path not in sys.path:
+           sys.path.insert(0, custom_path)
+           print(f"Added custom path to sys.path: {custom_path}")
+      
+        # Now attempt the required imports
+        try:
+           import tensorflow as tf
+           from main import app
+           print('✅ FastAPI app and TensorFlow imports successfully')
+        except Exception as e:
+           # Print sys.path to help debug if the import fails again
+           print(f"❌ Import failed. sys.path: {sys.path}")
+           print(f"❌ Error details: {e}")
+           sys.exit(1)
+        '@ | Out-File -FilePath "api_test_imports.py" -Encoding UTF8
+      
+        # Execute the temporary script
+        python api_test_imports.py
+      
+        # Cleanup the temporary script (optional, but good practice)
+        Remove-Item api_test_imports.py
     
     - name: Run API tests
       shell: powershell
