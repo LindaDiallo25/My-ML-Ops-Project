@@ -141,7 +141,7 @@ jobs:
           Write-Host "✅ Frontend build successful"
           Get-ChildItem -Path "Front/build"
         } else {
-          Write-Host "❌ Frontend build failed"
+          Write-Host "❌ Frontend build failed."
           exit 1
         }
 
