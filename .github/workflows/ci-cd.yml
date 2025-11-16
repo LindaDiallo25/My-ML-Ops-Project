@@ -52,7 +52,7 @@ jobs:
         # Ensure target directory exists
         New-Item -ItemType Directory -Force -Path $target_dir | Out-Null
         Write-Host "Installing fresh TensorFlow and dependencies..."
-        pip install tensorflow==2.16.1 numpy==1.26.4 --target $target_dir --no-cache-dir
+        pip install tensorflow==2.16.1 --target $target_dir --no-cache-dir
         
         # Update PYTHONPATH for all subsequent steps in this job
         # Prepend the custom install path to the existing PYTHONPATH
@@ -264,7 +264,7 @@ jobs:
     
     - name: Force Git LFS Pull
       run: git lfs pull
-      shell: bash
+      shell: powershell
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -280,7 +280,7 @@ jobs:
     - name: Validate model file
       shell : powershell
       run: |
-        # FIX 2: Set the Python environment variable to ensure proper UTF-8 encoding for printing
+        # Set the Python environment variable to ensure proper UTF-8 encoding for printing
         $env:PYTHONIOENCODING="utf-8"
         
         $target_dir = "./.pip_packages"
