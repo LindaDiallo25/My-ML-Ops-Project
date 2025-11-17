@@ -6,3 +6,6 @@ scikit-learn>=1.7.2
 tensorflow==2.16.1
 matplotlib==3.8.4
 mlflow
+fastapi
+uvicorn
+python-multipart
