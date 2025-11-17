@@ -290,37 +290,37 @@ jobs:
         docker-compose config
         echo "✅ Docker Compose configuration valid"
 
-    # Job 4: Deploy (optional, only on main branch)
-    deploy:
-      runs-on: self-hosted
-      needs: [docker-build]
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # Job 4: Deploy (optional, only on main branch)
+  deploy:
+    runs-on: self-hosted
+    needs: [docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
-      steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
     
-      - name: Deploy with Docker Compose
-        shell : powershell 
-        run: |
-          # Arrêt des conteneurs existants de manière plus robuste
-          docker-compose down -v --remove-orphans -t 10 || Write-Host "No containers to stop, continuing..."
+    - name: Deploy with Docker Compose
+      shell : powershell 
+      run: |
+        # Arrêt des conteneurs existants de manière plus robuste
+        docker-compose down -v --remove-orphans -t 10 || Write-Host "No containers to stop, continuing..."
         
-          # Démarrage des services
-          docker-compose up -d
+        # Démarrage des services
+        docker-compose up -d
         
-          # Attendre que les services soient sains
-          Start-Sleep -Seconds 15 
+        # Attendre que les services soient sains
+        Start-Sleep -Seconds 15 
         
-          # Vérification de la santé de l'API
-          try {
-            Write-Host "Checking API health..."
-            Invoke-RestMethod -Uri http://localhost:8000/health -Method Get
-            Write-Host "✅ Deployment successful and API healthy."
-          } catch {
-            Write-Error "❌ API health check failed after deployment: $($_.Exception.Message)"
-            exit 1
-          }
+        # Vérification de la santé de l'API
+        try {
+          Write-Host "Checking API health..."
+          Invoke-RestMethod -Uri http://localhost:8000/health -Method Get
+          Write-Host "✅ Deployment successful and API healthy."
+        } catch {
+          Write-Error "❌ API health check failed after deployment: $($_.Exception.Message)"
+          exit 1
+        }
       continue-on-error: true
 
   # Job 5: MLflow Model Validation
