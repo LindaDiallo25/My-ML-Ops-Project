@@ -235,7 +235,7 @@ jobs:
         Write-Host "Forcing use of 'desktop-linux' context to resolve pipe communication issues."
         try {
             docker context use desktop-linux
-            Write-Host "✅ Docker context set to desktop-linux."
+            Write-Host "✅ Docker context set to desktop-linux"
         } catch {
             Write-Host "⚠️ Failed to explicitly set context. Will try using 'default'."
             docker context use default
