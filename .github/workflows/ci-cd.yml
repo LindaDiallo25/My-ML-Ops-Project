@@ -47,7 +47,7 @@ jobs:
     - name: Install ALL Python dependencies into VENV
       shell: powershell
       run: |
-        # Use the activation script to ensure subsequent commands run inside the VENV
+        # Use the activation script to ensure subsequent commands run inside the VENV.
         .$env:VENV_ACTIVATE
       
         Write-Host "Installing dependencies from requirements.txt, plus TensorFlow, pytest, and flake8 into VENV..."
