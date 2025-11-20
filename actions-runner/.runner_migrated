@@ -1,0 +1,11 @@
+﻿{
+  "agentId": 2,
+  "agentName": "MLOps-Windows-Worker",
+  "poolId": 1,
+  "poolName": "Default",
+  "serverUrl": "https://pipelinesghubeus13.actions.githubusercontent.com/yI6yaQxZp3rfBewv3AXCsbL6Xzx7X1gJFKGgejUVDsnytZbNJC/",
+  "gitHubUrl": "https://github.com/LindaDiallo25/My-ML-Ops-Project",
+  "workFolder": "_work",
+  "useV2Flow": true,
+  "serverUrlV2": "https://broker.actions.githubusercontent.com/"
+}

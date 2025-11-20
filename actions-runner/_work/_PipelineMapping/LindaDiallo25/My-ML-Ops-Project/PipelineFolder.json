@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "LindaDiallo25/My-ML-Ops-Project",
+  "pipelineDirectory": "My-ML-Ops-Project",
+  "workspaceDirectory": "My-ML-Ops-Project\\My-ML-Ops-Project",
+  "repositories": {
+    "LindaDiallo25/My-ML-Ops-Project": {
+      "repositoryPath": "My-ML-Ops-Project\\My-ML-Ops-Project",
+      "lastRunOn": "11/16/2025 02:37:58 +01:00"
+    }
+  },
+  "lastRunOn": "11/17/2025 23:58:26 +01:00"
+}
