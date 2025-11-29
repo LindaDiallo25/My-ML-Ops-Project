@@ -206,19 +206,28 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         lfs: true
+        fetch-depth: 0 
 
-    # Arrêter proprement WSL2 pour garantir un redémarrage propre du démon Docker.
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
     - name: Shut down WSL2 for clean Docker start
       shell: powershell
       run: |
         Write-Host "Shutting down all WSL instances to ensure clean Docker initialization."
-        # Le '|| Write-Host' permet de continuer sans erreur si WSL n'était pas actif.
-        wsl --shutdown || Write-Host "WSL shutdown command failed, continuing as it may not be running."
+        try {
+            wsl --shutdown
+            Write-Host "WSL shutdown command completed."
+        } catch {
+            Write-Host "WSL shutdown command failed, continuing as it may not be running or due to permission error."
+        }
     
-    # Étape d'attente pour que Docker soit pleinement opérationnel après l'arrêt/redémarrage potentiel.
     - name: Wait for Docker daemon
       shell: powershell
       run: |
@@ -242,19 +251,20 @@ jobs:
             Write-Error "❌ Docker daemon failed to become responsive after $max_retries attempts."
             exit 1
         }
-        
-    # Étape de stabilisation pour corriger l'erreur de "context deadline exceeded" liée au pipe WSL2.
+    
     - name: Stabilize Docker Context (WSL2 Fix)
       shell: powershell
       run: |
         Write-Host "Forcing use of 'desktop-linux' context to resolve pipe communication issues."
         try {
-            docker context use desktop-linux
+            # Utiliser -ErrorAction Stop pour forcer le catch si la commande échoue
+            docker context use desktop-linux -ErrorAction Stop
             Write-Host "✅ Docker context set to desktop-linux."
         } catch {
             Write-Host "⚠️ Failed to explicitly set context. Will try using 'default'."
             docker context use default
         }
+    
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -350,9 +360,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         lfs: true
+        fetch-depth: 0
     
     - name: Configure Git to allow long paths (Windows MAX_PATH fix)
       shell: powershell
@@ -373,7 +384,7 @@ jobs:
       shell : powershell
       run: |
         $target_dir = "./.pip_packages"
-        pip install tensorflow==2.16.1 numpy pillow --target $target_dir 
+        python -m pip install tensorflow==2.16.1 numpy pillow --target $target_dir 
     
     - name: Validate model file
       shell : powershell
