@@ -231,6 +231,7 @@ jobs:
     - name: Wait for Docker daemon
       shell: powershell
       run: |
+        $ErrorActionPreference = "Stop" # Force PowerShell to treat non-terminating errors as terminating
         $max_retries = 5
         $delay_seconds = 5
         
@@ -257,7 +258,6 @@ jobs:
       run: |
         Write-Host "Forcing use of 'desktop-linux' context to resolve pipe communication issues."
         try {
-            # Utiliser -ErrorAction Stop pour forcer le catch si la commande échoue
             docker context use desktop-linux -ErrorAction Stop
             Write-Host "✅ Docker context set to desktop-linux."
         } catch {
@@ -323,7 +323,9 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Configure Git to allow long paths (Windows MAX_PATH fix)
       shell: powershell
@@ -335,13 +337,18 @@ jobs:
       shell : powershell 
       run: |
         # Arrêt des conteneurs existants de manière plus robuste
-        docker-compose down -v --remove-orphans -t 10 || Write-Host "No containers to stop, continuing..."
+        try {
+            docker-compose down -v --remove-orphans -t 10
+            Write-Host "Existing containers stopped."
+        } catch {
+            Write-Host "No containers to stop, or down failed gracefully, continuing..."
+        }
         
         # Démarrage des services
         docker-compose up -d
         
         # Attendre que les services soient sains
-        Start-Sleep -Seconds 15 
+        Start-Sleep -Seconds 15
         
         # Vérification de la santé de l'API
         try {
