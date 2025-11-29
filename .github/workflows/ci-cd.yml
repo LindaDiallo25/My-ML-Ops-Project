@@ -62,7 +62,7 @@ jobs:
   
     
     - name: Lint with flake8
-      # Runs inside the activated VENV (using the activation prefix)
+      # Runs inside the activated VENV (using the activation prefix).
       shell: powershell
       run: |
        .$env:VENV_ACTIVATE
