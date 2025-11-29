@@ -18,6 +18,12 @@ jobs:
       with:
         lfs: true
     
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -184,8 +190,8 @@ jobs:
           exit 1
         }
 
-  # Job 3: Build Docker Images
-  docker-build:
+  # Job 3: Build Docker Images (WITH WSL2 STABILIZATION)
+  build-docker:
     runs-on: self-hosted
     needs: [test-api, test-frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -195,15 +201,16 @@ jobs:
       uses: actions/checkout@v3
       with:
         lfs: true
-    
+
+    # Arrêter proprement WSL2 pour garantir un redémarrage propre du démon Docker.
     - name: Shut down WSL2 for clean Docker start
       shell: powershell
       run: |
         Write-Host "Shutting down all WSL instances to ensure clean Docker initialization."
         # Le '|| Write-Host' permet de continuer sans erreur si WSL n'était pas actif.
         wsl --shutdown || Write-Host "WSL shutdown command failed, continuing as it may not be running."
-
-
+    
+    # Étape d'attente pour que Docker soit pleinement opérationnel après l'arrêt/redémarrage potentiel.
     - name: Wait for Docker daemon
       shell: powershell
       run: |
@@ -214,10 +221,9 @@ jobs:
         
         for ($i = 0; $i -lt $max_retries; $i++) {
             try {
-                # Teste la connexion au démon Docker
-                docker info | Out-Null # Redirige la sortie pour ne pas surcharger les logs
-                Write-Host "✅ Docker daemon is ready after $($i + 1) attempts."
-                exit 0 # Succès, sort de la boucle et de l'étape
+                docker info | Out-Null
+                Write-Host "✅ Docker daemon is running."
+                break
             } catch {
                 Write-Host "⚠️ Docker check failed (Attempt $($i + 1)/$max_retries). Retrying in $delay_seconds seconds..."
                 Start-Sleep -Seconds $delay_seconds
@@ -228,8 +234,9 @@ jobs:
             Write-Error "❌ Docker daemon failed to become responsive after $max_retries attempts."
             exit 1
         }
-
-    - name: Stabilize Docker Context (WSL2 fix)
+        
+    # Étape de stabilisation pour corriger l'erreur de "context deadline exceeded" liée au pipe WSL2.
+    - name: Stabilize Docker Context (WSL2 Fix)
       shell: powershell
       run: |
         Write-Host "Forcing use of 'desktop-linux' context to resolve pipe communication issues."
@@ -240,7 +247,7 @@ jobs:
             Write-Host "⚠️ Failed to explicitly set context. Will try using 'default'."
             docker context use default
         }
-
+    
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     
