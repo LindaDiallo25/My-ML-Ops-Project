@@ -268,12 +268,23 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     
+    - name: Check Docker Hub Secrets are available
+      id: check_secrets
+      shell: powershell
+      run: |
+        if (-not "${{ secrets.DOCKER_USERNAME }}" -or -not "${{ secrets.DOCKER_PASSWORD }}") {
+          Write-Host "::warning::Docker Hub credentials are NOT configured. Skipping login and push."
+          echo "skip_push=true" >> $env:GITHUB_ENV
+        } else {
+          echo "skip_push=false" >> $env:GITHUB_ENV
+        }
+
     - name: Log in to Docker Hub
+      if: env.skip_push == 'false'
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-      continue-on-error: true
     
     - name: Build API Docker image
       shell : sh 
