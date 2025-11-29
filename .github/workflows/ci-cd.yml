@@ -191,7 +191,7 @@ jobs:
         }
 
   # Job 3: Build Docker Images (WITH WSL2 STABILIZATION)
-  build-docker:
+  docker-build:
     runs-on: self-hosted
     needs: [test-api, test-frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
