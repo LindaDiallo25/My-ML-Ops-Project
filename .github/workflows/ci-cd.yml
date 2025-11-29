@@ -159,8 +159,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4 
       with:
         node-version: '18'
         cache: 'npm'
@@ -169,6 +175,8 @@ jobs:
     - name: Install frontend dependencies
       run: |
         cd Front
+          # Tentative d'aplatir les dépendances pour éviter les chemins trop longs
+          npm config set legacy-peer-deps true
         npm ci
     
     - name: Build frontend
@@ -307,6 +315,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
     - name: Deploy with Docker Compose
       shell : powershell 
       run: |
@@ -340,6 +354,12 @@ jobs:
       with:
         lfs: true
     
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
     - name: Force Git LFS Pull
       run: git lfs pull
       shell: powershell
