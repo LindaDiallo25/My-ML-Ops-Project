@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 COPY api/ ./api/
 
 # Copy scripts for auto-registration
-COPY scripts/init_minio.py ./scripts/init_minio.py
-COPY scripts/auto_register_model.py ./scripts/auto_register_model.py
+COPY scripts/setup_minio_bucket.py ./scripts/setup_minio_bucket.py
+COPY scripts/register_model_simple.py ./scripts/register_model_simple.py
 COPY scripts/docker_entrypoint.sh ./scripts/docker_entrypoint.sh
 
 # Convert line endings and make entrypoint script executable
