@@ -287,13 +287,13 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     
     - name: Build API Docker image
-      shell : sh 
+      shell : powershell
       run: |
         docker build -t mlops-api:latest -f Dockerfile.api .
         docker tag mlops-api:latest mlops-api:${{ github.sha }}
     
     - name: Build Frontend Docker image
-      shell : sh
+      shell : powershell
       run: |
         cd Front
         docker build -t mlops-frontend:latest .
@@ -301,7 +301,7 @@ jobs:
     
     - name: Push to Docker Hub (if configured)
       if: success()
-      shell: sh
+      shell: powershell
       run: |
         if [ -n "${{ secrets.DOCKER_USERNAME }}" ]; then
           docker tag mlops-api:latest ${{ secrets.DOCKER_USERNAME }}/mlops-api:latest
