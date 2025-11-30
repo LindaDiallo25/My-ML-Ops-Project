@@ -13,8 +13,10 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Install Python dependencies
+# Installer toutes les dépendances de requirements.txt, puis ajouter les extras
+# pour FastAPI/Uvicorn (même s'ils sont déjà listés, les extras garantissent les performances).
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir fastapi uvicorn[standard] python-multipart
+    pip install --no-cache-dir 'uvicorn[standard]' 'fastapi' 'python-multipart'
 
 # Copy API code
 COPY api/ ./api/
