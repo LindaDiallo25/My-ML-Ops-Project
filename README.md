@@ -43,7 +43,8 @@ The API expects a trained model file at `models/dandelion_grass_cnn.keras`.
 If you do not have the model yet, train it locally:
 ```bash
 python retrain/train_with_mlflow.py
-2. Start the full stack with Docker Compose
+
+### 2. Start the full stack with Docker Compose
 Bash
 docker-compose up --build
 After startup, the services will be available at:
@@ -56,20 +57,21 @@ MLflow UI: http://localhost:5000
 
 MinIO Console: http://localhost:9001
 
-3. Run API locally (optional)
+### 3. Run API locally (optional)
 Bash
 ./scripts/start_api.sh
-4. Run frontend locally (optional)
+### 4. Run frontend locally (optional)
 Bash
 ./scripts/start_frontend.sh
-API Endpoints
+
+## API Endpoints
 GET / - Root info and endpoint summary
 
 GET /health - Health check (reports model load status for infrastructure monitoring)
 
 POST /predict - Upload an image and receive prediction results
 
-MLflow & Model Registry
+## MLflow & Model Registry
 The project uses MLflow and an S3-compatible MinIO backend for artifact storage.
 
 MLflow tracking: http://localhost:5000
@@ -86,7 +88,7 @@ promote_model_to_production.py - Promote a registered model version to Productio
 
 setup_minio_bucket.py - Create and validate the mlflow-artifacts bucket in MinIO
 
-Monitoring in Production (Evidently AI)
+## Monitoring in Production (Evidently AI)
 To ensure the model remains reliable in production, this project uses Evidently AI to monitor performance and detect anomalies.
 
 Run the monitoring pipeline:
@@ -104,7 +106,7 @@ Classification Metrics: Calculates Accuracy, F1-Score, and generates a Confusion
 
 The output is an interactive HTML report saved at monitoring/evidently_report.html.
 
-CI/CD Pipelines
+## CI/CD Pipelines
 This repository includes automation workflows defined in .github/workflows.
 
 Continuous Integration & Deployment (ci-cd.yml):
@@ -125,7 +127,7 @@ Automates data preparation, model retraining, and MLflow tracking.
 
 Uploads the new model artifacts as GitHub workflow artifacts.
 
-Repository Layout
+## Repository Layout
 api/ - FastAPI application code
 
 Front/ - React/Vite frontend app
@@ -148,11 +150,5 @@ docker-compose.yml - Local stack orchestration
 
 Dockerfile.api & Front/Dockerfile - Container build configurations
 
-License
+## License
 MIT License
-
-
-### 💡 Ce qui a changé :
-1. **L'arborescence (`Repository Layout`)** est désormais exactement celle attendue par les jurys (avec `notebooks`, `src`, `tests`, `monitoring`, `retrain`).
-2. **La section `Monitoring`** explique clairement l'utilisation d'Evidently AI pour le *Data Drift*, le *Target Drift* et les *Classification Metrics*.
-3. **La section CI/CD** met en valeur tes workflows GitHub Actions de manière très professionnelle (séparation entre l'intégration continue de l'application et l'entraînement continu du modèle).
