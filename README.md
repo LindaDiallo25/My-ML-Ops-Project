@@ -1,6 +1,6 @@
-# ML-Ops Project: Dandelion vs Grass Classification
+# 🌿 ML-Ops Project: Dandelion vs Grass Classification
 
-## Overview
+## 📌 Overview
 
 This repository contains an end-to-end ML Ops demo for binary plant classification: dandelion vs grass. It combines:
 
@@ -12,7 +12,7 @@ This repository contains an end-to-end ML Ops demo for binary plant classificati
 - Docker Compose orchestration for local development
 - GitHub Actions for CI/CD automation
 
-## Architecture
+## 🏗️ Architecture
 
 The project uses the following components:
 
@@ -36,7 +36,7 @@ The project uses the following components:
 - Python 3.11+ for local script execution
 - Node.js 18+ and npm for local frontend development
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Prepare the model
 The API expects a trained model file at `models/dandelion_grass_cnn.keras`.
@@ -44,8 +44,9 @@ If you do not have the model yet, train it locally:
 python retrain/train_with_mlflow.py
 
 ### 2. Start the full stack with Docker Compose
-Bash
+```bash 
 docker-compose up --build
+```
 After startup, the services will be available at:
 
 Frontend: http://localhost:3001
@@ -94,7 +95,7 @@ Run the monitoring pipeline:
 
 Bash
 python monitoring/run_monitoring.py
-# or use the shell entrypoint: ./monitoring/run_monitoring.sh
+### or use the shell entrypoint: ./monitoring/run_monitoring.sh
 This script compares reference training data against current production data to compute:
 
 Data Drift: Detects shifts in input features (e.g., image brightness, dimensions).
