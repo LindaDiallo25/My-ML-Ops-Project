@@ -41,7 +41,6 @@ The project uses the following components:
 ### 1. Prepare the model
 The API expects a trained model file at `models/dandelion_grass_cnn.keras`.
 If you do not have the model yet, train it locally:
-```bash
 python retrain/train_with_mlflow.py
 
 ### 2. Start the full stack with Docker Compose
