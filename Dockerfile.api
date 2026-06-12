@@ -1,0 +1,47 @@
+FROM python:3.11
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libgomp1 \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+# Installer toutes les dépendances de requirements.txt, puis ajouter les extras
+# pour FastAPI/Uvicorn (même s'ils sont déjà listés, les extras garantissent les performances).
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir 'uvicorn[standard]' 'fastapi' 'python-multipart'
+
+# Copy API code
+COPY api/ ./api/
+
+# Copy scripts for auto-registration
+COPY scripts/setup_minio_bucket.py ./scripts/setup_minio_bucket.py
+COPY scripts/register_model_simple.py ./scripts/register_model_simple.py
+COPY scripts/docker_entrypoint.sh ./scripts/docker_entrypoint.sh
+
+# Convert line endings and make entrypoint script executable
+RUN sed -i 's/\r$//' ./scripts/docker_entrypoint.sh && \
+    chmod +x ./scripts/docker_entrypoint.sh
+
+# Create models directory
+RUN mkdir -p /app/models
+
+WORKDIR /app/api
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ["curl", "-f", "http://localhost:8000/health"]    
+    # OR CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+
+# Run the entrypoint script (which registers model then starts API)
+CMD ["/app/scripts/docker_entrypoint.sh"]

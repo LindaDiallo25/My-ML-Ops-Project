@@ -1,0 +1,441 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # Job 1: Lint and Test Python Code
+  test-api:
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        lfs: true
+    
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Create and Activate Virtual Environment
+      id: create_venv
+      shell: powershell
+      run: |
+        $VENV_PATH = "./venv_ci"
+      
+        Write-Host "Creating isolated Python Virtual Environment at: $VENV_PATH"
+        python -m venv $VENV_PATH
+      
+        # Set the activation script path as an environment variable
+        # On Windows (PowerShell), this is VENV_PATH/Scripts/Activate.ps1
+        echo "VENV_ACTIVATE=$VENV_PATH\Scripts\Activate.ps1" >> $env:GITHUB_ENV
+
+    - name: Install ALL Python dependencies into VENV
+      shell: powershell
+      run: |
+        # Use the activation script to ensure subsequent commands run inside the VENV
+        .$env:VENV_ACTIVATE
+      
+        Write-Host "Installing dependencies from requirements.txt, plus TensorFlow, pytest, and flake8 into VENV..."
+        pip install -r requirements.txt --no-cache-dir
+        pip install tensorflow==2.16.1 pytest pytest-cov flake8 --no-cache-dir
+  
+    
+    - name: Lint with flake8
+      # Runs inside the activated VENV (using the activation prefix).
+      shell: powershell
+      run: |
+       .$env:VENV_ACTIVATE
+       flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+       flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
+    
+    - name: Check model file exists
+      shell : powershell 
+      run: |
+        if (Test-Path -Path "models/dandelion_grass_cnn.keras") {
+          Write-Host "✅ Model file found"
+        } else {
+          Write-Host "❌ Model file not found in 'models' directory"
+          exit 1
+        }
+
+    - name: Test API imports
+      shell : powershell
+      run: |
+        # Activate the VENV
+        .$env:VENV_ACTIVATE
+        Write-Host "Running import test inside VENV..."
+        Set-Location api
+      
+        # Create a simple Python script for testing imports
+        @'
+        import sys
+        import os
+        import io 
+      
+        # Set the standard output encoding to UTF-8 to prevent the UnicodeEncodeError
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+      
+        # Now attempt the required imports
+        try:
+           import tensorflow as tf
+           from main import app
+           print('✅ FastAPI app and TensorFlow imports successfully')
+        except Exception as e:
+           # Print sys.path to help debug if the import fails again
+           print(f"❌ Import failed. sys.path: {sys.path}")
+           print(f"❌ Error details: {e}")
+           sys.exit(1)
+        '@ | Out-File -FilePath "api_test_imports.py" -Encoding UTF8
+      
+        # Execute the temporary script
+        python api_test_imports.py
+      
+        # Cleanup the temporary script (optional, but good practice)
+        Remove-Item api_test_imports.py
+    
+    - name: Run API tests
+      shell: powershell
+      run: |
+        # Activate the VENV for this step
+        .$env:VENV_ACTIVATE
+        
+        # Change directory to the API folderdir
+        Set-Location api
+      
+        # Start API in background using Start-Process, capturing the process ID
+        $ApiProcess = Start-Process python -ArgumentList "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" -PassThru
+        $ApiPid = $ApiProcess.Id
+      
+        Write-Host "API started with PID: $ApiPid. Waiting 10 seconds for server to start..."
+        Start-Sleep -Seconds 10
+      
+        try {
+          # Test endpoints using PowerShell's native HTTP client (Invoke-RestMethod)
+          Write-Host "Testing /health endpoint..."
+          Invoke-RestMethod -Uri http://localhost:8000/health -Method Get
+        
+          Write-Host "Testing /model-info endpoint..."
+          Invoke-RestMethod -Uri http://localhost:8000/model-info -Method Get
+        
+          Write-Host "✅ API tests successful"
+        } catch {
+          Write-Error "❌ API tests failed: $($_.Exception.Message)"
+          exit 1
+        } finally {
+        # Stop API using the captured PID
+        Write-Host "Stopping API (PID: $ApiPid)..."
+        Stop-Process -Id $ApiPid -Force -ErrorAction SilentlyContinue
+        }
+      continue-on-error: true
+       
+
+  # Job 2: Build and Test Frontend
+  test-frontend:
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4 
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: Front/package-lock.json
+    
+    - name: Install frontend dependencies
+      run: |
+        cd Front
+          # Tentative d'aplatir les dépendances pour éviter les chemins trop longs
+          npm config set legacy-peer-deps true
+        npm ci
+    
+    - name: Build frontend
+      shell : powershell
+      run: |
+        Set-Location Front
+        npm run build
+        Write-Host "--- Contents of 'Front' directory after build ---"
+        Get-ChildItem -Recurse 
+
+    - name: Check build output
+      shell : powershell 
+      run: |
+        if (Test-Path -Path "Front/build" -PathType Container) {
+          Write-Host "✅ Frontend build successful"
+          Get-ChildItem -Path "Front/build"
+        } else {
+          Write-Host "❌ Frontend build failed."
+          exit 1
+        }
+
+  # Job 3: Build Docker Images (WITH WSL2 STABILIZATION)
+  docker-build:
+    runs-on: self-hosted
+    needs: [test-api, test-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+        fetch-depth: 0 
+
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
+    - name: Shut down WSL2 for clean Docker start
+      shell: powershell
+      run: |
+        Write-Host "Shutting down all WSL instances to ensure clean Docker initialization."
+        try {
+            wsl --shutdown
+            Write-Host "WSL shutdown command completed."
+        } catch {
+            Write-Host "WSL shutdown command failed, continuing as it may not be running or due to permission error."
+        }
+    
+    - name: Wait for Docker daemon
+      shell: powershell
+      run: |
+        $ErrorActionPreference = "Stop" # Force PowerShell to treat non-terminating errors as terminating
+        $max_retries = 5
+        $delay_seconds = 5
+        
+        Write-Host "Attempting to confirm Docker daemon status..."
+        
+        for ($i = 0; $i -lt $max_retries; $i++) {
+            try {
+                docker info | Out-Null
+                Write-Host "✅ Docker daemon is running."
+                break
+            } catch {
+                Write-Host "⚠️ Docker check failed (Attempt $($i + 1)/$max_retries). Retrying in $delay_seconds seconds..."
+                Start-Sleep -Seconds $delay_seconds
+            }
+        }
+        
+        if ($i -eq $max_retries) {
+            Write-Error "❌ Docker daemon failed to become responsive after $max_retries attempts."
+            exit 1
+        }
+    
+    - name: Stabilize Docker Context (WSL2 Fix)
+      shell: powershell
+      run: |
+        Write-Host "Forcing use of 'desktop-linux' context to resolve pipe communication issues."
+        try {
+            docker context use desktop-linux 
+            Write-Host "✅ Docker context set to desktop-linux."
+        } catch {
+            Write-Host "⚠️ Failed to explicitly set context. Will try using 'default'."
+            docker context use default
+        }
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Check Docker Hub Secrets are available
+      id: check_secrets
+      shell: powershell
+      run: |
+        if (-not "${{ secrets.DOCKER_USERNAME }}" -or -not "${{ secrets.DOCKER_PASSWORD }}") {
+          Write-Host "::warning::Docker Hub credentials are NOT configured. Skipping login and push."
+          echo "skip_push=true" >> $env:GITHUB_ENV
+        } else {
+          echo "skip_push=false" >> $env:GITHUB_ENV
+        }
+
+    - name: Log in to Docker Hub
+      if: env.skip_push == 'false'
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build API Docker image
+      shell : powershell
+      run: |
+        docker build -t mlops-api:latest -f Dockerfile.api .
+        docker tag mlops-api:latest mlops-api:${{ github.sha }}
+    
+    - name: Build Frontend Docker image
+      shell : powershell
+      run: |
+        cd Front
+        docker build -t mlops-frontend:latest .
+        docker tag mlops-frontend:latest mlops-frontend:${{ github.sha }}
+    
+    - name: Push to Docker Hub (if configured)
+      if: success()
+      shell: powershell
+      run: |
+        if [ -n "${{ secrets.DOCKER_USERNAME }}" ]; then
+          docker tag mlops-api:latest ${{ secrets.DOCKER_USERNAME }}/mlops-api:latest
+          docker tag mlops-api:latest ${{ secrets.DOCKER_USERNAME }}/mlops-api:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/mlops-api:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/mlops-api:${{ github.sha }}
+          
+          docker tag mlops-frontend:latest ${{ secrets.DOCKER_USERNAME }}/mlops-frontend:latest
+          docker tag mlops-frontend:latest ${{ secrets.DOCKER_USERNAME }}/mlops-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/mlops-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/mlops-frontend:${{ github.sha }}
+          
+          echo "✅ Images pushed to Docker Hub"
+        else
+          echo "⚠️ Docker Hub credentials not configured, skipping push"
+        fi
+      continue-on-error: true
+    
+    - name: Test Docker Compose
+      run: |
+        docker-compose config
+        echo "✅ Docker Compose configuration valid"
+
+  # Job 4: Deploy (optional, only on main branch)
+  deploy:
+    runs-on: self-hosted
+    needs: [docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
+    - name: Deploy with Docker Compose
+      shell : powershell 
+      run: |
+        # Arrêt des conteneurs existants de manière plus robuste
+        try {
+            docker-compose down -v --remove-orphans -t 10
+            Write-Host "Existing containers stopped."
+        } catch {
+            Write-Host "No containers to stop, or down failed gracefully, continuing..."
+        }
+        
+        # Démarrage des services
+        docker-compose up -d
+        
+        # Attendre que les services soient sains
+        Start-Sleep -Seconds 15
+        
+        # Vérification de la santé de l'API
+        try {
+          Write-Host "Checking API health..."
+          Invoke-RestMethod -Uri http://localhost:8000/health -Method Get
+          Write-Host "✅ Deployment successful and API healthy."
+        } catch {
+          Write-Error "❌ API health check failed after deployment: $($_.Exception.Message)"
+          exit 1
+        }
+      continue-on-error: true
+
+  # Job 5: MLflow Model Validation
+  validate-model:
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+        fetch-depth: 0
+    
+    - name: Configure Git to allow long paths (Windows MAX_PATH fix)
+      shell: powershell
+      run: |
+        Write-Host "Setting core.longpaths=true for Git to avoid MAX_PATH limit errors."
+        git config --global core.longpaths true
+
+    - name: Force Git LFS Pull
+      run: git lfs pull
+      shell: powershell
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      shell : powershell
+      run: |
+        $target_dir = "./.pip_packages"
+        python -m pip install tensorflow==2.16.1 numpy pillow --target $target_dir 
+    
+    - name: Validate model file
+      shell : powershell
+      run: |
+        # Set the Python environment variable to ensure proper UTF-8 encoding for printing
+        $env:PYTHONIOENCODING="utf-8"
+        
+        $target_dir = "./.pip_packages"
+        $env:PYTHONPATH = "$target_dir;$env:PYTHONPATH"
+
+        python -c "
+        import tensorflow as tf
+        import os
+        
+        model_path = 'models/dandelion_grass_cnn.keras'
+        
+        if not os.path.exists(model_path):
+            print('❌ Model file not found')
+            exit(1)
+        
+        file_size = os.path.getsize(model_path)
+        print(f'Model file size: {file_size / 1024 / 1024:.2f} MB')
+        
+        if file_size < 1000000:  # Less than 1MB indicates Git LFS pointer
+            print('❌ Model file appears to be a Git LFS pointer, not the actual model')
+            exit(1)
+        
+        try:
+            model = tf.keras.models.load_model(model_path)
+            print('✅ Model loaded successfully')
+            print(f'Input shape: {model.input_shape}')
+            print(f'Output shape: {model.output_shape}')
+            print(f'Total parameters: {model.count_params():,}')
+        except Exception as e:
+            print(f'❌ Failed to load model: {e}')
+            exit(1)
+        "
