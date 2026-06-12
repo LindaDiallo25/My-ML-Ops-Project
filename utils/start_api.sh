@@ -13,10 +13,10 @@ echo "📁 Project directory: $PROJECT_DIR"
 echo ""
 
 # Check if model file exists
-if [ ! -f "$PROJECT_DIR/dandelion_grass_cnn.keras" ]; then
-    echo "❌ Model file not found: dandelion_grass_cnn.keras"
+if [ ! -f "$PROJECT_DIR/models/dandelion_grass_cnn.keras" ]; then
+    echo "❌ Model file not found: models/dandelion_grass_cnn.keras"
     echo "Please run the training script first:"
-    echo "  python train_with_mlflow.py"
+    echo "  python retrain/train_with_mlflow.py"
     exit 1
 fi
 

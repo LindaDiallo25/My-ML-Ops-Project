@@ -1,6 +1,6 @@
 """
 Simple script to register model in MLflow - designed to run inside Docker container.
-Run with: docker exec mlops_api python3 /app/api/../scripts/register_model_simple.py
+Run with: docker exec mlops_api python3 /app/retrain/register_model_simple.py
 """
 
 import mlflow

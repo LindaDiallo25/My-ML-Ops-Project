@@ -21,14 +21,14 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 # Copy API code
 COPY api/ ./api/
 
-# Copy scripts for auto-registration
-COPY scripts/setup_minio_bucket.py ./scripts/setup_minio_bucket.py
-COPY scripts/register_model_simple.py ./scripts/register_model_simple.py
-COPY scripts/docker_entrypoint.sh ./scripts/docker_entrypoint.sh
+# Copy helper files for auto-registration and startup
+COPY utils/docker_entrypoint.sh ./utils/docker_entrypoint.sh
+COPY monitoring/setup_minio_bucket.py ./monitoring/setup_minio_bucket.py
+COPY retrain/register_model_simple.py ./retrain/register_model_simple.py
 
 # Convert line endings and make entrypoint script executable
-RUN sed -i 's/\r$//' ./scripts/docker_entrypoint.sh && \
-    chmod +x ./scripts/docker_entrypoint.sh
+RUN sed -i 's/\r$//' ./utils/docker_entrypoint.sh && \
+    chmod +x ./utils/docker_entrypoint.sh
 
 # Create models directory
 RUN mkdir -p /app/models
@@ -44,4 +44,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     # OR CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
 # Run the entrypoint script (which registers model then starts API)
-CMD ["/app/scripts/docker_entrypoint.sh"]
+CMD ["/app/utils/docker_entrypoint.sh"]

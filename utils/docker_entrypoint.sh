@@ -13,12 +13,12 @@ sleep 5
 # Initialize MinIO bucket
 echo ""
 echo "Initializing MinIO..."
-python3 /app/scripts/init_minio.py
+python3 /app/monitoring/setup_minio_bucket.py
 
 # Auto-register model in MLflow
 echo ""
 echo "Checking MLflow Model Registry..."
-python3 /app/scripts/auto_register_model.py
+python3 /app/retrain/register_model_simple.py
 
 # Check if registration was successful (ignore errors, API should start anyway)
 if [ $? -eq 0 ]; then

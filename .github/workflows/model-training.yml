@@ -36,7 +36,7 @@ jobs:
       run: |
         if [ ! -d "cleaned_images_for_model" ] || [ -z "$(ls -A cleaned_images_for_model)" ]; then
           echo "Downloading and cleaning images..."
-          python run_import_clean.py
+          python src/run_import_clean.py
         else
           echo "✅ Training data already exists"
           ls cleaned_images_for_model/ | wc -l
@@ -44,7 +44,7 @@ jobs:
     
     - name: Train model with MLflow
       run: |
-        python train_with_mlflow.py
+        python retrain/train_with_mlflow.py
       env:
         EPOCHS: ${{ github.event.inputs.epochs || '15' }}
         BATCH_SIZE: ${{ github.event.inputs.batch_size || '32' }}
