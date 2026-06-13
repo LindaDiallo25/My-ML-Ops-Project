@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-api-deployment
+  labels:
+    app: mlops-api
+spec:
+  replicas: 2 # Permet d'avoir de la haute disponibilité si un conteneur tombe
+  selector:
+    matchLabels:
+      app: mlops-api
+  template:
+    metadata:
+      labels:
+        app: mlops-api
+    spec:
+      containers:
+      - name: mlops-api-container
+        image: my-ml-ops-project-api:latest # À remplacer par le nom de ton image sur GitHub Packages ou Docker Hub
+        ports:
+        - containerPort: 8000
+        env:
+        # Variables d'environnement pour que l'API se connecte à MinIO et MLflow dans le cluster
+        - name: MLFLOW_TRACKING_URI
+          value: "http://mlops-mlflow-service:5000"
+        - name: MLFLOW_S3_ENDPOINT_URL
+          value: "http://mlops-minio-service:9001"
+        - name: AWS_ACCESS_KEY_ID
+          value: "minioadmin"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "minioadmin"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi" # Ton modèle faisant 170Mo, on prévoit une limite large pour le chargement en RAM
+            cpu: "1"
+        # On reproduit le Healthcheck Docker en version native Kubernetes !
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
